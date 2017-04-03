@@ -18,10 +18,15 @@ def usage():
     print "    Port: --port, -p, port."
     sys.exit(1)
 
+FAILED = '/etc/sshguard/failed'
+SUCCESSFUL = '/etc/sshguard/successful'
+BANNED_IPS = '/etc/sshguard/banned_ips'
+
 parser = OptionParser()
 parser.add_option("-e", "--email", dest='email')
 parser.add_option("-p", "--password", dest='password')
 parser.add_option("-P", "--port", dest='port')
+parser.add_option("-l", "--log-file", dest='logfile')
 (options, args) = parser.parse_args()
 
 if options.email is None:
@@ -40,6 +45,11 @@ if options.port is None:
     port = 587
 else:
     port = options.port
+
+if options.logfile is None:
+    logfile = '/var/log/auth.log'
+else
+    logfile = options.logfile
 
 def send_mail(sender,to,password,port):
     try:
