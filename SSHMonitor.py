@@ -1,7 +1,7 @@
 #/usr/bin/python
 # coding: interpy
 
-import smtplib,sys
+import smtplib,sys,os
 from optparse import OptionParser
 
 def usage():
@@ -21,6 +21,10 @@ def usage():
 FAILED = '/etc/sshguard/failed'
 SUCCESSFUL = '/etc/sshguard/successful'
 BANNED_IPS = '/etc/sshguard/banned_ips'
+
+for i in [FAILED,SUCCESSFUL,BANNED_IPS]:
+    if not os.path.exists(i):
+        open(i, 'w')
 
 parser = OptionParser()
 parser.add_option("-e", "--email", dest='email')
