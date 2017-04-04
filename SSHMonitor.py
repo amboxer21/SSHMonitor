@@ -5,6 +5,7 @@ from pygtail import Pygtail
 import smtplib,sys,os,re,time
 from optparse import OptionParser
 
+DIRECTORY = '/etc/sshguard'
 FAILED = '/etc/sshguard/failed'
 SUCCESSFUL = '/etc/sshguard/successful'
 BANNED_IPS = '/etc/sshguard/banned_ips'
@@ -55,6 +56,9 @@ if options.logfile is None or not file_exists(options.logfile):
 else:
     logfile = options.logfile
 
+if not os.path.exists(DIRECTORY):
+    os.makedirs(DIRECTORY)
+
 for i in [FAILED,SUCCESSFUL,BANNED_IPS]:
     if not file_exists(i):
         open(i, 'w')
@@ -80,7 +84,7 @@ def blocked_ip(title,ip):
     else:
         return
 
-    print "w_file: #{w_file}"
+    print "Using logfile: #{w_file}"
 
     f = open(w_file, 'a+')
     f.write("#{ip}\n")
