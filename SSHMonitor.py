@@ -1,7 +1,8 @@
 #/usr/bin/python
 # coding: interpy
 
-import smtplib,sys,os
+from pygtail import Pygtail
+import smtplib,sys,os,re,time
 from optparse import OptionParser
 
 FAILED = '/etc/sshguard/failed'
@@ -58,15 +59,56 @@ for i in [FAILED,SUCCESSFUL,BANNED_IPS]:
     if not file_exists(i):
         open(i, 'w')
 
-def send_mail(sender,to,password,port):
+def send_mail(sender,to,password,port,subject,body):
     try:
+        message = "Subject: {}\n\n{}".format(subject,body)
         mail = smtplib.SMTP('smtp.gmail.com',port)
         mail.starttls()
         mail.login(sender,password)
-        mail.sendmail(sender, to, "Test email.")
+        mail.sendmail(sender, to, message)
         print "\nSent email successfully.\n"
     except smtplib.SMTPAuthenticationError:
         print "\nCould not athenticate with password and username!\n"
 
+def blocked_ip(title,ip):
+    if title == "success":
+        w_file = SUCCESSFUL 
+    elif title == "failed":
+        w_file = FAILED
+    elif title == "banned":
+        w_file = BANNED_IPS
+    else:
+        return
+
+    print "w_file: #{w_file}"
+
+    f = open(w_file, 'w')
+    f.write("#{ip}\n")
+    f.close()
+
+def tail_file(logfile):
+    for line in Pygtail(logfile):
+
+        s = re.search("sshd.*Accepted password for .* from (.*) port.*$", line, re.I | re.M)
+        f = re.search("sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
+        b = re.search("sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
+
+        if s:
+            sys.stdout.write("successful - #{s.group(1)}")
+            blocked_ip("success",s.group(1))
+            send_mail(sender,to,password,port,'New SSH Connection',s)
+            time.sleep(1)
+        if f:
+            sys.stdout.write("failed - #{f.group(1)}")
+            blocked_ip("failed",f.group(1))
+            send_mail(sender,to,password,port,'Failed SSH attempt',f)
+            time.sleep(1)
+        if b:
+            sys.stdout.write("banned - #{b.group(1)}")
+            blocked_ip("banned",b.group(1))
+            send_mail(sender,to,password,port,'SSH IP Blocked',b)
+            time.sleep(1)
+
 if len(sys.argv) > 4:
-    send_mail(sender,to,password,port)
+    while True:
+        tail_file("/var/log/auth.log")
