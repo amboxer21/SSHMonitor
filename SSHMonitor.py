@@ -82,7 +82,7 @@ def blocked_ip(title,ip):
 
     print "w_file: #{w_file}"
 
-    f = open(w_file, 'w')
+    f = open(w_file, 'a+')
     f.write("#{ip}\n")
     f.close()
 
