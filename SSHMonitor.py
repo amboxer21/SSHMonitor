@@ -96,17 +96,17 @@ def tail_file(logfile):
         if s:
             sys.stdout.write("successful - #{s.group(1)}")
             blocked_ip("success",s.group(1))
-            send_mail(sender,to,password,port,'New SSH Connection',s)
+            send_mail(sender,to,password,port,'New SSH Connection',"New ssh connection from #{s.group(1)}")
             time.sleep(1)
         if f:
             sys.stdout.write("failed - #{f.group(1)}")
             blocked_ip("failed",f.group(1))
-            send_mail(sender,to,password,port,'Failed SSH attempt',f)
+            send_mail(sender,to,password,port,'Failed SSH attempt',"Failed ssh attempt from #{f.group(1)}")
             time.sleep(1)
         if b:
             sys.stdout.write("banned - #{b.group(1)}")
             blocked_ip("banned",b.group(1))
-            send_mail(sender,to,password,port,'SSH IP Blocked',b)
+            send_mail(sender,to,password,port,'SSH IP Blocked',"#{b.group()} was banned for too many failed attempts")
             time.sleep(1)
 
 if len(sys.argv) > 4:
