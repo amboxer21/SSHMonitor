@@ -93,24 +93,24 @@ def blocked_ip(title,ip):
 def tail_file(logfile):
     for line in Pygtail(logfile):
 
-        s = re.search("sshd.*Accepted password for .* from (.*) port.*$", line, re.I | re.M)
-        f = re.search("sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
-        b = re.search("sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
+        s = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password for .* from (.*) port.*$", line, re.I | re.M)
+        f = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
+        b = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
 
         if s:
-            sys.stdout.write("successful - #{s.group(1)}")
-            blocked_ip("success",s.group(1))
-            send_mail(sender,to,password,port,'New SSH Connection',"New ssh connection from #{s.group(1)}")
+            sys.stdout.write("successful - #{s.group(2)}")
+            blocked_ip("success",s.group(2))
+            send_mail(sender,to,password,port,'New SSH Connection',"New ssh connection from #{s.group(2)} at #{s.group(1)}")
             time.sleep(1)
         if f:
-            sys.stdout.write("failed - #{f.group(1)}")
-            blocked_ip("failed",f.group(1))
-            send_mail(sender,to,password,port,'Failed SSH attempt',"Failed ssh attempt from #{f.group(1)}")
+            sys.stdout.write("failed - #{f.group(2)}")
+            blocked_ip("failed",f.group(2))
+            send_mail(sender,to,password,port,'Failed SSH attempt',"Failed ssh attempt from #{f.group(2)} at #{f.group(1)}")
             time.sleep(1)
         if b:
-            sys.stdout.write("banned - #{b.group(1)}")
-            blocked_ip("banned",b.group(1))
-            send_mail(sender,to,password,port,'SSH IP Blocked',"#{b.group(1)} was banned for too many failed attempts")
+            sys.stdout.write("banned - #{b.group(2)}")
+            blocked_ip("banned",b.group(2))
+            send_mail(sender,to,password,port,'SSH IP Blocked',"#{b.group(2)} was banned at #{b.group(1)} for too many failed attempts.")
             time.sleep(1)
 
 if len(sys.argv) > 4:
