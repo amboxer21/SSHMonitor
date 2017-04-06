@@ -1,7 +1,8 @@
 #/usr/bin/python
 # coding: interpy
 
-from pygtail import Pygtail
+#from pygtail import Pygtail
+from tailf import tailf
 import smtplib,sys,os,re,time
 from optparse import OptionParser
 
@@ -91,7 +92,8 @@ def blocked_ip(title,ip):
     f.close()
 
 def tail_file(logfile):
-    for line in Pygtail(logfile):
+    #for line in Pygtail(logfile):
+    for line in tailf(logfile):
 
         s = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password for .* from (.*) port.*$", line, re.I | re.M)
         f = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
