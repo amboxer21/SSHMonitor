@@ -92,17 +92,17 @@ def blocked_ip(title,ip):
     f.close()
 
 def tail_file(logfile):
-    #for line in Pygtail(logfile):
     for line in tailf(logfile):
 
-        s = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password for .* from (.*) port.*$", line, re.I | re.M)
+        #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
+        s = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$", line, re.I | re.M)
         f = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
         b = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
 
         if s:
-            sys.stdout.write("successful - #{s.group(2)}")
-            blocked_ip("success",s.group(2))
-            send_mail(sender,to,password,port,'New SSH Connection',"New ssh connection from #{s.group(2)} at #{s.group(1)}")
+            sys.stdout.write("successful - #{s.group(3)}")
+            blocked_ip("success",s.group(3))
+            send_mail(sender,to,password,port,'New SSH Connection',"New ssh connection from #{s.group(3)} for user #{s.group(2)} at #{s.group(1)}")
             time.sleep(1)
         if f:
             sys.stdout.write("failed - #{f.group(2)}")
