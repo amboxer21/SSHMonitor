@@ -8,4 +8,4 @@ sudo pip install pytailf
 sudo cp SSHMonitor.py /usr/bin/
 sudo chmod a+x /usr/bin/SSHMonitor.py
 sudo cp home/user/.ssh/is_sshm_running.sh /home/`hostname`/.ssh/
-echo root_crontab.txt >> /var/spool/cron/crontabs/root
+cat root_crontab.txt >> /var/spool/cron/crontabs/root
