@@ -4,8 +4,9 @@ sudo apt-get install python python-dev python-setuptools python-dev build-essent
 sudo easy_install pip
 sudo pip install interpy
 sudo pip install pytailf
+sudo pip install tailf
 
 sudo cp SSHMonitor.py /usr/bin/
 sudo chmod a+x /usr/bin/SSHMonitor.py
-sudo cp home/user/.ssh/is_sshm_running.sh /home/`hostname`/.ssh/
+sudo cp home/user/.ssh/is_sshm_running.sh /home/$USER/.ssh/
 cat root_crontab.txt >> /var/spool/cron/crontabs/root
