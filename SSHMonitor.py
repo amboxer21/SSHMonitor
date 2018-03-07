@@ -11,51 +11,26 @@ FAILED = '/etc/sshguard/failed'
 SUCCESSFUL = '/etc/sshguard/successful'
 BANNED_IPS = '/etc/sshguard/banned_ips'
 
-def usage():
-    print "Usage: SSHMonitor.py <email address> <password> [options]"
-    print "OPTIONS:\n"
-    print "    [port]     - If the port is not specified it will default to 445.\n"
-    print "    [logging]  - If sshgaurd is installed then you can have SSHGuard log failed and successful\n"
-    print "                   attempts. As well as blocked IPs.\n"
-    print "    [email]    - This is the email address you want SSHMonitor to send the notifications to.\n"
-    print "    [log file] - You can specify the log file or it will default to /var/log/auth.log.\n\n"
-    print "SWITCHES:\n"
-    print "    Enable SSHGuard logging: --log-enable, -L, log-enable\n"
-    print "    Help: --help, -h, help\n"
-    print "    Port: --port, -p, port."
-    sys.exit(1)
-
 parser = OptionParser()
-parser.add_option("-e", "--email", dest='email')
-parser.add_option("-p", "--password", dest='password')
-parser.add_option("-P", "--port", dest='port')
-parser.add_option("-l", "--log-file", dest='logfile')
+parser.add_option("-e", 
+    "--email", dest='email', help='"This argument is required!"')
+parser.add_option("-p",
+    "--password", dest='password', help='"This argument is required!"')
+parser.add_option("-P",
+    "--port", dest='port', help='"Deafults to port 587"', type="int", default=587)
+parser.add_option("-l",
+    "--log-file", dest='logfile', help='"Defaults to /var/log/auth.log"', default='/var/log/auth.log')
+parser.add_option("-g",
+    "--log-enable", dest='logenable', help='"SSHMonitor autologs IPs by default"', action="store_true")
+parser.add_option("-v",
+    "--verbose", dest='verbose', help='"Prints args passed to SSHMonitor. This is disabled by default."', action="store_true")
 (options, args) = parser.parse_args()
+
+if options.verbose:
+    print options
 
 def file_exists(file):
     return os.path.exists(file)
-
-if options.email is None:
-    print "\nE-mail cannot be empty!\n"
-    usage
-else:
-    sender,to = options.email,options.email
-
-if options.password is None:
-    print "\nMust provide a password!\n"
-    usage
-else:
-    password = options.password
-
-if options.port is None:
-    port = 587
-else:
-    port = options.port
-
-if options.logfile is None or not file_exists(options.logfile):
-    logfile = '/var/log/auth.log'
-else:
-    logfile = options.logfile
 
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
@@ -85,36 +60,43 @@ def blocked_ip(title,ip):
     else:
         return
 
-    print "Using logfile: #{w_file}"
-
-    f = open(w_file, 'a+')
-    f.write("#{ip}\n")
-    f.close()
+    if options.logenable:
+        print "Using logfile: #{w_file}"
+        f = open(w_file, 'a+')
+        f.write("#{ip}\n")
+        f.close()
 
 def tail_file(logfile):
     for line in tailf(logfile):
 
         #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
-        s = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$", line, re.I | re.M)
-        f = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
-        b = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
+        success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$", line, re.I | re.M)
+        failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$", line, re.I | re.M)
+        blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
 
-        if s:
+        if success:
             sys.stdout.write("successful - #{s.group(3)}")
             blocked_ip("success",s.group(3))
-            send_mail(sender,to,password,port,'New SSH Connection',"New ssh connection from #{s.group(3)} for user #{s.group(2)} at #{s.group(1)}")
+            send_mail(options.email,options.email,options.password,options.port,
+                'New SSH Connection', "New ssh connection from #{s.group(3)} for user #{s.group(2)} at #{s.group(1)}")
             time.sleep(1)
-        if f:
+        if failed:
             sys.stdout.write("failed - #{f.group(2)}")
             blocked_ip("failed",f.group(2))
-            send_mail(sender,to,password,port,'Failed SSH attempt',"Failed ssh attempt from #{f.group(2)} at #{f.group(1)}")
+            send_mail(options.email,options.email,options.password,options.port,
+                'Failed SSH attempt',"Failed ssh attempt from #{f.group(2)} at #{f.group(1)}")
             time.sleep(1)
-        if b:
+        if blocked:
             sys.stdout.write("banned - #{b.group(2)}")
             blocked_ip("banned",b.group(2))
-            send_mail(sender,to,password,port,'SSH IP Blocked',"#{b.group(2)} was banned at #{b.group(1)} for too many failed attempts.")
+            send_mail(options.email,options.email,options.password,options.port,
+                'SSH IP Blocked',"#{b.group(2)} was banned at #{b.group(1)} for too many failed attempts.")
             time.sleep(1)
 
 if len(sys.argv) > 4:
     while True:
-        tail_file("/var/log/auth.log")
+        tail_file(options.logfile)
+
+if options.email is None or options.password is None:
+    print("\nERROR: Both E-mail and password are required!\n")
+    parser.print_help()
