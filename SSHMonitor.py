@@ -21,7 +21,7 @@ parser.add_option("-P",
 parser.add_option("-l",
     "--log-file", dest='logfile', help='"Defaults to /var/log/auth.log"', default='/var/log/auth.log')
 parser.add_option("-g",
-    "--log-enable", dest='logenable', help='"SSHMonitor autologs IPs by default"', action="store_true")
+    "--log-disable", dest='logdisable', help='"SSHMonitor autologs IPs by default. This turns logging off."', action="store_true",default=False)
 parser.add_option("-v",
     "--verbose", dest='verbose', help='"Prints args passed to SSHMonitor. This is disabled by default."', action="store_true")
 (options, args) = parser.parse_args()
@@ -60,7 +60,7 @@ def blocked_ip(title,ip):
     else:
         return
 
-    if options.logenable:
+    if not options.logdisable:
         print "Using logfile: #{w_file}"
         f = open(w_file, 'a+')
         f.write("#{ip}\n")
@@ -75,22 +75,22 @@ def tail_file(logfile):
         blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$", line, re.I | re.M)
 
         if success:
-            sys.stdout.write("successful - #{s.group(3)}")
-            blocked_ip("success",s.group(3))
+            sys.stdout.write("successful - #{success.group(3)}\n")
+            blocked_ip("success",success.group(3))
             send_mail(options.email,options.email,options.password,options.port,
-                'New SSH Connection', "New ssh connection from #{s.group(3)} for user #{s.group(2)} at #{s.group(1)}")
+                'New SSH Connection', "New ssh connection from #{success.group(3)} for user #{success.group(2)} at #{success.group(1)}")
             time.sleep(1)
         if failed:
-            sys.stdout.write("failed - #{f.group(2)}")
-            blocked_ip("failed",f.group(2))
+            sys.stdout.write("failed - #{failed.group(2)}\n")
+            blocked_ip("failed",failed.group(2))
             send_mail(options.email,options.email,options.password,options.port,
-                'Failed SSH attempt',"Failed ssh attempt from #{f.group(2)} at #{f.group(1)}")
+                'Failed SSH attempt',"Failed ssh attempt from #{failed.group(2)} at #{failed.group(1)}")
             time.sleep(1)
         if blocked:
-            sys.stdout.write("banned - #{b.group(2)}")
-            blocked_ip("banned",b.group(2))
+            sys.stdout.write("banned - #{blocked.group(2)}\n")
+            blocked_ip("banned",blocked.group(2))
             send_mail(options.email,options.email,options.password,options.port,
-                'SSH IP Blocked',"#{b.group(2)} was banned at #{b.group(1)} for too many failed attempts.")
+                'SSH IP Blocked',"#{blocked.group(2)} was banned at #{blocked.group(1)} for too many failed attempts.")
             time.sleep(1)
 
 if len(sys.argv) > 4:
