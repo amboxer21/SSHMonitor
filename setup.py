@@ -6,7 +6,6 @@ from setuptools import setup
 from distutils.errors import DistutilsExecError
 from distutils.command.install import install as init
 
-#class Install(distutils.cmd.Command):
 class install(init):
     def run(self):
         init.run(self)
@@ -16,7 +15,6 @@ class install(init):
         except DistutilsExecError:
             self.warn('listing directory failed')
 
-#setuptools.setup(
 setup(
     name='sshmonitor',
     version='0.0.2',
