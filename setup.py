@@ -13,7 +13,7 @@ class install(init):
             os.system("/bin/echo -e 'Setting up SSHMonitor'")
             os.system('/bin/bash build/build.sh')
         except DistutilsExecError:
-            self.warn('listing directory failed')
+            self.warn('Error setting up SSHMonitor!')
 
 setup(
     name='sshmonitor',
