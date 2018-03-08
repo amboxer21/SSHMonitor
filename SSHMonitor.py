@@ -63,7 +63,7 @@ class SSHMonitor():
         except smtplib.SMTPAuthenticationError:
             print "\nCould not athenticate with password and username!\n"
     
-    def blocked_ip(self,title,ip):
+    def blocked_ip(self,title,ip,date):
         if title == "success":
             w_file = self.successful 
         elif title == "failed":
@@ -76,7 +76,7 @@ class SSHMonitor():
         if not self.logdisable:
             print "Using logfile: #{w_file}"
             f = open(w_file, 'a+')
-            f.write("#{ip}\n")
+            f.write("#{ip} - #{date}\n")
             f.close()
     
     def tail_file(self):
@@ -89,19 +89,19 @@ class SSHMonitor():
     
             if success:
                 sys.stdout.write("successful - #{success.group(3)}\n")
-                self.blocked_ip("success",success.group(3))
+                self.blocked_ip("success",success.group(3),success.group(1))
                 self.send_mail(self.email,self.email,self.password,self.port,
                     'New SSH Connection', "New ssh connection from #{success.group(3)} for user #{success.group(2)} at #{success.group(1)}")
                 time.sleep(1)
             if failed:
                 sys.stdout.write("failed - #{failed.group(2)}\n")
-                self.blocked_ip("failed",failed.group(2))
+                self.blocked_ip("failed",failed.group(2),failed.group(1))
                 self.send_mail(self.email,self.email,self.password,self.port,
                     'Failed SSH attempt',"Failed ssh attempt from #{failed.group(2)} at #{failed.group(1)}")
                 time.sleep(1)
             if blocked:
                 sys.stdout.write("banned - #{blocked.group(2)}\n")
-                self.blocked_ip("banned",blocked.group(2))
+                self.blocked_ip("banned",blocked.group(2),blocked.group(1))
                 self.send_mail(self.email,self.email,self.password,self.port,
                     'SSH IP Blocked',"#{blocked.group(2)} was banned at #{blocked.group(1)} for too many failed attempts.")
                 time.sleep(1)
