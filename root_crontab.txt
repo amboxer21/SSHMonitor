@@ -1,1 +1,0 @@
-* * * * * /bin/bash /home/anthony/.ssh/is_sshm_running.sh
