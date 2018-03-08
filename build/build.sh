@@ -24,30 +24,42 @@ elif [[ ! $opt == 'install' || ! $opt == 'remove' ]]; then
   usage;
 fi
 
-for i in apt-get apt yum dnf; do
+for i in apt-get yum; do
   if [[ ! `$i --version 2> /dev/null` == '' ]]; then
     pkgm=$i;
   fi
 done
 
-if [[ $pkgm == 'yum' || $pkgm == 'dnf' ]]; then
+if [[ $pkgm == 'yum' && $opt == 'install' ]]; then
   for y in "${rpm[@]}"; do
     sudo $pkgm -y $opt $y;
   done 
-elif [[ $pkgm == 'apt' || $pkgm == 'apt-get' ]]; then
+  finalize;
+elif [[ $pkgm == 'apt-get' && $opt == 'install' ]]; then
   for d in "${deb[@]}"; do
     sudo apt-get -y $opt $d;
   done 
+  finalize;
+elif [[ $opt == 'remove' ]]; then
+  remove;
 else
   echo -e "Your package manager is not supported.";
 fi
 
 for p in "${pip[@]}"; do
-  sudo pip install $p;
+  sudo pip $opt $p;
 done
 
-sudo cp ../sshmonitor/sshmonitor.py /usr/bin/
-sudo chmod a+x /usr/bin/sshmonitor.py
-sudo cp home/user/.ssh/is_sshm_running.sh /home/$USER/.ssh/
-sudo sed -i "s/user/$USER/g" root_crontab.txt
-cat root_crontab.txt >> /var/spool/cron/crontabs/root
+function finalize() {
+  sudo cp ../sshmonitor/sshmonitor.py /usr/bin/
+  sudo chmod a+x /usr/bin/sshmonitor.py
+  sudo cp home/user/.ssh/is_sshm_running.sh /home/$USER/.ssh/
+  sudo sed -i "s/user/$USER/g" root_crontab.txt
+  cat root_crontab.txt >> /var/spool/cron/crontabs/root
+};
+
+function remove() {
+  sudo rm /usr/bin/sshmonitor.py
+  sudo rm /home/$USER/.ssh/is_sshm_running.sh
+  sudo sed -i 's/^\*.*.sh$//g' build/root_crontab_bak.txt
+};
