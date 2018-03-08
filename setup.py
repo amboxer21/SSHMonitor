@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#import distutils.cmd,setuptools,os
+import os
 
 from setuptools import setup  
 from distutils.errors import DistutilsExecError
@@ -9,12 +9,12 @@ from distutils.command.install import install as init
 #class Install(distutils.cmd.Command):
 class install(init):
     def run(self):
+        init.run(self)
         try:
-            self.spawn('/bin/echo', '-e', 'Setting up SSHMonitor')
-            self.spawn('/bin/bash','build/build.sh')
+            os.system("/bin/echo -e 'Setting up SSHMonitor'")
+            os.system('/bin/bash build/build.sh')
         except DistutilsExecError:
             self.warn('listing directory failed')
-            super.run()
 
 #setuptools.setup(
 setup(
