@@ -1,8 +1,10 @@
 #/usr/bin/python
 # coding: interpy
     
+import smtplib,sys,os
+import re,time,pytailf
+
 from tailf import tailf
-import smtplib,sys,os,re,time
 from optparse import OptionParser
     
 class SSHMonitor():
