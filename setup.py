@@ -11,7 +11,7 @@ class install(init):
         init.run(self)
         try:
             os.system("/bin/echo -e 'Setting up SSHMonitor'")
-            os.system('/bin/bash build/build.sh')
+            os.system('/bin/bash build/build.sh install')
         except DistutilsExecError:
             self.warn('Error setting up SSHMonitor!')
 
