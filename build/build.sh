@@ -26,8 +26,8 @@ for p in "${pip[@]}"; do
   sudo pip install $p;
 done
 
-sudo cp ../SSHMonitor.py /usr/bin/
-sudo chmod a+x /usr/bin/SSHMonitor.py
+sudo cp ../sshmonitor/sshmonitor.py /usr/bin/
+sudo chmod a+x /usr/bin/sshmonitor.py
 sudo cp home/user/.ssh/is_sshm_running.sh /home/$USER/.ssh/
 sudo sed -i "s/user/$USER/g" root_crontab.txt
 cat root_crontab.txt >> /var/spool/cron/crontabs/root
