@@ -1,8 +1,28 @@
 #!/bin/bash
 
+opt=$1;
+
 declare -a pip=(pytailf interpy)
 declare -a deb=(python python-dev python-setuptools python-pip build-essential)
 declare -a rpm=(python python-devel python-setuptools python-pip)
+
+function usage() {
+  echo -e "-> bash $0 [option]\n\n-> Options: install or remove.\n";
+  exit 0;
+};
+
+if [[ ! $EUID == 0 ]]; then
+  echo -e "\nERROR: Must be root!\n";
+  exit 0;
+fi
+
+if [[ $opt == '' ]]; then
+  echo -e "\nERROR: Must provide an argument!\n";
+  usage;
+elif [[ ! $opt == 'install' || ! $opt == 'remove' ]]; then
+  echo -e "\nERROR: $opt is not a valid arg!\n";
+  usage;
+fi
 
 for i in apt-get apt yum dnf; do
   if [[ ! `$i --version 2> /dev/null` == '' ]]; then
@@ -10,13 +30,13 @@ for i in apt-get apt yum dnf; do
   fi
 done
 
-if [[ $pkgm == 'yum' || pkgm == 'dnf' ]]; then
+if [[ $pkgm == 'yum' || $pkgm == 'dnf' ]]; then
   for y in "${rpm[@]}"; do
-    sudo $pkgm -y install $y;
+    sudo $pkgm -y $opt $y;
   done 
 elif [[ $pkgm == 'apt' || $pkgm == 'apt-get' ]]; then
   for d in "${deb[@]}"; do
-    sudo apt-get -y install $d;
+    sudo apt-get -y $opt $d;
   done 
 else
   echo -e "Your package manager is not supported.";
