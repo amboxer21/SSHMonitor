@@ -1,1 +1,1 @@
-* * * * * /bin/bash /home/user/.ssh/is_sshm_running.sh
+* * * * * /bin/bash /home/root/.ssh/is_sshm_running.sh

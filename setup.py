@@ -1,19 +1,41 @@
 #!/usr/bin/env python
 
 import os
-
-from setuptools import setup  
+from distutils.cmd import Command
+from distutils.core import setup
 from distutils.errors import DistutilsExecError
-from distutils.command.install import install as init
 
-class install(init):
+class Install(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
     def run(self):
-        init.run(self)
         try:
             os.system("/bin/echo -e 'Setting up SSHMonitor'")
             os.system('/bin/bash build/build.sh install')
         except DistutilsExecError:
             self.warn('Error setting up SSHMonitor!')
+
+class Remove(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            os.system("/bin/echo -e 'Removing SSHMonitor'")
+            os.system('/bin/bash build/build.sh remove')
+        except DistutilsExecError:
+            self.warn('Error removing SSHMonitor!')
 
 setup(
     name='sshmonitor',
@@ -32,7 +54,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License (GPL)', 
     ],
     cmdclass={
-        'install': install,
-
+        'install': Install,
+        'remove': Remove
     },
 )
