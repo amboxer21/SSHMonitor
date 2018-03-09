@@ -14,6 +14,7 @@ class SSHMonitor():
         failed='/etc/sshguard/failed',
         successful='/etc/sshguard/successful',
         banned_ips='/etc/sshguard/banned_ips'):
+
             parser = OptionParser()
             parser.add_option("-e", 
                 "--email", dest='email', help='"This argument is required!"')
