@@ -13,10 +13,10 @@ function install() {
   fi
   sudo cp sshmonitor/sshmonitor.py /usr/bin/
   sudo chmod a+x /usr/bin/sshmonitor.py
-  sudo cp build/home/user/.ssh/is_sshm_running.sh /home/root/.ssh/
-  sudo sed -i "s/user/$USER/g" build/root_crontab.txt
+  sudo cp sshmonitor/build/home/user/.ssh/is_sshm_running.sh /home/root/.ssh/
+  sudo sed -i "s/user/$USER/g" sshmonitor/build/root_crontab.txt
   if [[ ! `egrep -io "\*.*is_sshm_running.sh$" /var/spool/cron/crontabs/root` ]]; then
-    sudo cat build/root_crontab.txt >> /var/spool/cron/crontabs/root
+    sudo cat sshmonitor/build/root_crontab.txt >> /var/spool/cron/crontabs/root
   fi
 };
 
@@ -73,8 +73,8 @@ for i in apt-get yum; do
   fi
 done
 
-if [[ `egrep -io "\"example@gmail.com\" -p \"password\""  build/home/user/.ssh/is_sshm_running.sh` ]]; then
-  echo -e "\nPlease add your email and password to this file:\nbuild/home/user/.ssh/is_sshm_running.sh\n";
+if [[ `egrep -io "\"example@gmail.com\" -p \"password\""  sshmonitor/build/home/user/.ssh/is_sshm_running.sh` ]]; then
+  echo -e "\nPlease add your email and password to this file:\nsshmonitor/build/home/user/.ssh/is_sshm_running.sh\n";
   echo -e "Exiting now!\n";
   exit 0;
 fi

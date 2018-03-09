@@ -17,7 +17,7 @@ class Install(Command):
     def run(self):
         try:
             os.system("/bin/echo -e 'Setting up SSHMonitor'")
-            os.system('/bin/bash build/build.sh install')
+            os.system('/bin/bash sshmonitor/build/build.sh install')
         except DistutilsExecError:
             self.warn('Error setting up SSHMonitor!')
 
@@ -33,7 +33,7 @@ class Remove(Command):
     def run(self):
         try:
             os.system("/bin/echo -e 'Removing SSHMonitor'")
-            os.system('/bin/bash build/build.sh remove')
+            os.system('/bin/bash sshmonitor/build/build.sh remove')
         except DistutilsExecError:
             self.warn('Error removing SSHMonitor!')
 

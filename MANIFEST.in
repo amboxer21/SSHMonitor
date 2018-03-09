@@ -1,0 +1,9 @@
+recursive-include sshmonitor *.py
+recursive-include sshmonitor/build *
+recursive-include sshmonitor/build *
+
+global-exclude *.sw[op]
+global-exclude *.py[co]
+global-exclude *.backup
+
+include LICENSE MANIFEST README setup.py
