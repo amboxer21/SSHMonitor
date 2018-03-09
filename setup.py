@@ -40,7 +40,7 @@ class Remove(Command):
 setup(
     packages=[],
     name='sshmonitor',
-    version='0.0.2',
+    version='0.0.3',
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
     license='GPL-3.0',
