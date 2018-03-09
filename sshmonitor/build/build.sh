@@ -84,7 +84,7 @@ if [[ $opt == '' ]]; then
   usage;
 elif [[ $opt == 'install' ]]; then
   install;
-  manage_pip 'install';
+  #manage_pip 'install';
 elif [[ $opt == 'remove' ]]; then
   remove;
   manage_pip 'remove';

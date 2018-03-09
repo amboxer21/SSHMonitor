@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import os
+from setuptools import setup
 from distutils.cmd import Command
-from distutils.core import setup
 from distutils.errors import DistutilsExecError
 
 class Install(Command):
@@ -44,6 +44,9 @@ setup(
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
     license='GPL-3.0',
+    install_requires=[
+        'pytailf','interpy',
+    ],
     url='https://github.com/amboxer21/SSHMonitorPy',
     description="SSHMonitorPy notifies you of any ssh attempts to your computer, whether the attempts are successful or not.",
     classifiers=[
