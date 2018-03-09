@@ -3,8 +3,21 @@ Python implementation of SSHMonitor.rb.
 
 SSHMonitorPy notifies you of any ssh attempts to your computer, whether the attempts are successful or not.
 
-Build:
-python setup.py install
+Build program:
+  python setup.py install
 
-Remove:
-python setup.py remove
+Remove program:
+  python setup.py remove
+
+Build package for PyPi:
+  python setup.py sdist
+  twine upload dist/*
+
+Contents of ~/.pypirc:
+[distutils]
+  index-servers =
+      pypi
+
+  [pypi]
+  username:username
+  password:password
