@@ -38,13 +38,14 @@ class Remove(Command):
             self.warn('Error removing SSHMonitor!')
 
 setup(
+    packages=[],
     name='sshmonitor',
     version='0.0.2',
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
     license='GPL-3.0',
     url='https://github.com/amboxer21/SSHMonitorPy',
-    packages=[],
+    description="SSHMonitorPy notifies you of any ssh attempts to your computer, whether the attempts are successful or not.",
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
