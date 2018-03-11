@@ -22,7 +22,7 @@ class Remove(Command):
             self.warn('Error removing SSHMonitor!')
 
 if __name__ == '__main__':
-    if not sys.argv[1] == 'remove':
+    if sys.argv[1] == 'install':
         try:
             os.system("/bin/echo -e 'Setting up SSHMonitor'")
             os.system('/bin/bash sshmonitor/build/build.sh install')
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     setup(
         packages=[],
         name='sshmonitor',
-        version='0.0.3',
+        version='0.0.5',
         author='Anthony Guevara',
         author_email='amboxer21@gmail.com',
         license='GPL-3.0',

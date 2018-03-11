@@ -1,8 +1,8 @@
-#/usr/bin/python
+#/usr/bin/env python
 # coding: interpy
     
+import re,time
 import smtplib,sys,os
-import re,time,pytailf
 
 from tailf import tailf
 from optparse import OptionParser
@@ -25,7 +25,7 @@ class SSHMonitor():
             parser.add_option("-l",
                 "--log-file", dest='logfile', help='"Defaults to /var/log/auth.log"', default='/var/log/auth.log')
             parser.add_option("-g",
-                "--log-disable", dest='logdisable', help='"SSHMonitor autologs IPs by default. This turns logging off."', action="store_true",default=False)
+                "--log-disable", dest='logdisable', help='"SSHMonitor autologs IPs by default. This turns logging off."', action="store_true", default=False)
             parser.add_option("-v",
                 "--verbose", dest='verbose', help='"Prints args passed to SSHMonitor. This is disabled by default."', action="store_true")
             (options, args) = parser.parse_args()
@@ -43,6 +43,10 @@ class SSHMonitor():
     
             if options.verbose:
                 print options
+
+            if self.email is None or self.password is None:
+                print("\nERROR: Both E-mail and password are required!\n")
+                parser.print_help()
     
     def file_exists(self,file):
         return os.path.exists(file)
@@ -94,7 +98,7 @@ class SSHMonitor():
                 sys.stdout.write("successful - #{success.group(3)}\n")
                 self.blocked_ip("success",success.group(3),success.group(1))
                 self.send_mail(self.email,self.email,self.password,self.port,
-                    'New SSH Connection', "New ssh connection from #{success.group(3)} for user #{success.group(2)} at #{success.group(1)}")
+                    'New SSH Connection',"New ssh connection from #{success.group(3)} for user #{success.group(2)} at #{success.group(1)}")
                 time.sleep(1)
             if failed:
                 sys.stdout.write("failed - #{failed.group(2)}\n")
@@ -117,7 +121,3 @@ if __name__ == '__main__':
     if len(sys.argv) > 4:
         while True:
             sshm.tail_file()
-    
-    if self.email is None or self.password is None:
-        print("\nERROR: Both E-mail and password are required!\n")
-        parser.print_help()

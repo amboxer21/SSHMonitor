@@ -17,8 +17,6 @@ function install() {
   sudo chmod a+x /usr/bin/sshmonitor.py
   echo -e "\nCopying sshmonitor/build/home/user/.ssh/is_sshm_running.sh to /home/root/.ssh/\n";
   sudo cp sshmonitor/build/home/user/.ssh/is_sshm_running.sh /home/root/.ssh/
-  echo -e "\nEditing sshmonitor/build/root_crontab.txt via sed.\n";
-  sudo sed -i "s/user/$USER/g" sshmonitor/build/root_crontab.txt
   if [[ ! `egrep -io "\*.*is_sshm_running.sh$" /var/spool/cron/crontabs/root` ]]; then
     echo -e "\nAdding to root crontab.\n";
     sudo cat sshmonitor/build/root_crontab.txt >> /var/spool/cron/crontabs/root
