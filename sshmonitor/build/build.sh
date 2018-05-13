@@ -7,16 +7,16 @@ declare -a rpm=(python python-devel python-setuptools python-pip)
 
 function install() {
   manage_pkgs
-  if [[ ! -d /home/root/.ssh ]]; then
-    echo -e "Dir /home/root/.ssh does not exist. Creating it now.\n";
-    sudo mkdir -p /home/root/.ssh/;
+  if [[ ! -d /root/.ssh ]]; then
+    echo -e "Dir /root/.ssh does not exist. Creating it now.\n";
+    sudo mkdir -p /root/.ssh/;
   fi
   echo -e "\nCopying sshmonitor/sshmonitor.py to /usr/bin/\n";
   sudo cp sshmonitor/sshmonitor.py /usr/bin/
   echo -e "\nChanging permissions on /usr/bin/sshmonitor.py to a+x.\n";
   sudo chmod a+x /usr/bin/sshmonitor.py
-  echo -e "\nCopying sshmonitor/build/home/user/.ssh/is_sshm_running.sh to /home/root/.ssh/\n";
-  sudo cp sshmonitor/build/home/user/.ssh/is_sshm_running.sh /home/root/.ssh/
+  echo -e "\nCopying sshmonitor/build/home/user/.ssh/is_sshm_running.sh to /root/.ssh/\n";
+  sudo cp sshmonitor/build/home/user/.ssh/is_sshm_running.sh /root/.ssh/
   if [[ ! `egrep -io "\*.*is_sshm_running.sh$" /var/spool/cron/crontabs/root` ]]; then
     echo -e "\nAdding to root crontab.\n";
     sudo cat sshmonitor/build/root_crontab.txt >> /var/spool/cron/crontabs/root
@@ -26,8 +26,8 @@ function install() {
 function remove() {
   echo -e "\nRemoving /usr/bin/sshmonitor.py\n";
   sudo rm /usr/bin/sshmonitor.py 2> /dev/null
-  echo -e "\nRemoving /home/root/.ssh/is_sshm_running.sh\n";
-  sudo rm /home/root/.ssh/is_sshm_running.sh 2> /dev/null
+  echo -e "\nRemoving /root/.ssh/is_sshm_running.sh\n";
+  sudo rm /root/.ssh/is_sshm_running.sh 2> /dev/null
   echo -e "\nEditing crontab /var/spool/cron/crontabs/root via sed.\n";
   sudo sed -i 's/^\*.*.sh$//g' /var/spool/cron/crontabs/root 2> /dev/null
   for p in pytailf interpy; do
