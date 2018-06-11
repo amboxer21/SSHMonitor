@@ -10,14 +10,21 @@
 
   **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py remove`
 
-## Modify version in setup.py before building:
+## Modify version in setup.py via vim/nano before building:
+**`BEFORE(vim/nano setup.py):`**
 ```javascript
     setup(
         packages=[],
         name='sshmonitor',
         version='0.0.6', # increment version number
 ```
-
+**`AFTER:`**
+```javascript
+    setup(
+        packages=[],
+        name='sshmonitor',
+        version='0.0.7', # increment version number
+```
 ## Build package for PyPi:
 
   **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py sdist`
