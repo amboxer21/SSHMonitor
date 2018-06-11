@@ -3,10 +3,38 @@ Python implementation of SSHMonitor.rb.
 
 SSHMonitorPy notifies you of any ssh attempts to your computer, whether the attempts are successful or not.
 
-### Build:
+Build program:
+  sudo python setup.py install
 
-python setup.py install
+Remove program:
+  python setup.py remove
 
-### Remove:
+Modify version in setup.py before building:
+    setup(
+        packages=[],
+        name='sshmonitor',
+        version='0.0.6', # increment version number
 
-python setup.py remove
+Build package for PyPi:
+  python setup.py sdist
+  twine upload dist/*
+
+NOTE: If twine does not work with the above command you can try,
+   twine upload --repository-url 'https://upload.pypi.org/legacy/' dist/sshmonitor-0.0.6.tar.gz
+
+Contents of ~/.pypirc:
+[distutils]
+index-servers =
+  pypi
+  pypitest
+
+[pypi]
+repository=https://pypi.python.org/pypi
+username=username
+password='password'
+
+[pypitest]
+repository=https://testpypi.python.org/pypi
+username=username
+password='password'
+

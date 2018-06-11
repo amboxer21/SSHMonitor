@@ -24,9 +24,17 @@ NOTE: If twine does not work with the above command you can try,
 
 Contents of ~/.pypirc:
 [distutils]
-  index-servers =
-      pypi
+index-servers =
+  pypi
+  pypitest
 
-  [pypi]
-  username:username
-  password:password
+[pypi]
+repository=https://pypi.python.org/pypi
+username=username
+password='password'
+
+[pypitest]
+repository=https://testpypi.python.org/pypi
+username=username
+password='password'
+
