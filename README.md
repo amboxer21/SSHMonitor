@@ -34,6 +34,8 @@
 **NOTE:** If twine does not work with the above command you can try,
 
    `twine upload --repository-url 'https://upload.pypi.org/legacy/' dist/sshmonitor-0.0.6.tar.gz`
+   
+   **NOTE:** `dist/sshmonitor-0.0.6.tar.gz` will be the name of the file twine just created.
 
 ## Contents of ~/.pypirc:
 ```javascript
