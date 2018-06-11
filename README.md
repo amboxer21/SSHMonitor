@@ -4,11 +4,11 @@
 
 ## Build program:
 
-  **[anthony@ghost SSHMonitorPy]$** sudo python setup.py install
+  **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py install`
 
 ## Remove program:
 
-  **[anthony@ghost SSHMonitorPy]$** sudo python setup.py remove
+  **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py remove`
 
 ## Modify version in setup.py before building:
 ```javascript
@@ -20,9 +20,9 @@
 
 ## Build package for PyPi:
 
-  **[anthony@ghost SSHMonitorPy]$** sudo python setup.py sdist
+  **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py sdist`
   
-  **[anthony@ghost SSHMonitorPy]$** twine upload dist/*
+  **[anthony@ghost SSHMonitorPy]$** `twine upload dist/*`
 
 **NOTE:** If twine does not work with the above command you can try,
    twine upload --repository-url 'https://upload.pypi.org/legacy/' dist/sshmonitor-0.0.6.tar.gz
