@@ -25,6 +25,7 @@
   **[anthony@ghost SSHMonitorPy]$** `twine upload dist/*`
 
 **NOTE:** If twine does not work with the above command you can try,
+
    `twine upload --repository-url 'https://upload.pypi.org/legacy/' dist/sshmonitor-0.0.6.tar.gz`
 
 ## Contents of ~/.pypirc:
