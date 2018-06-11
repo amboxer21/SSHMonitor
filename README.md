@@ -1,7 +1,6 @@
 # SSHMonitorPy
-> Monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts.
+> Monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not.
 ***
-SSHMonitorPy notifies you of any ssh attempts to your computer, whether the attempts are successful or not.
 
 ## Build program:
 
