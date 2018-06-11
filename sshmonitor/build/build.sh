@@ -5,16 +5,15 @@ opt=$1;
 declare -a deb=(python python-dev python-setuptools python-pip build-essential)
 declare -a rpm=(python python-devel python-setuptools python-pip)
 
-if [[ ! `echo $EUID` == 0 ]]; then echo -e "Must be root to run this build script."; exit; fi
+if [[ ! $EUID == 0 ]]; then echo -e "Must be root to run this build script."; exit; fi
 
 function cron_path() {
+  cronpath=''
   path='/var/spool/cron'
   if [[ ! `which crontab 2> /dev/null` ]]; then echo -e "Cron is not installed. Exiting now."; exit; fi
-  if [[ -e `$path/crontabs 2> /dev/null` ]]; then 
-    cronpath="$path/crontabs";
-  elif [[ ! -e `$path/crontabs 2> /dev/null` ]]; then
-    cronpath='/var/spool/cron'
-  else
+  if [[ -e `$path 2> /dev/null` ]]; then cronpath='/var/spool/cron'; fi
+  if [[ -e `$path/crontabs 2> /dev/null` ]]; then cronpath="$path/crontabs"; fi
+  if [[ $cronpath == '' ]]; then
     echo -e "Could not find cron path. Please manually add contents of file\n  sshmonitor/build/root_crontab.txt " 
     echo -e "to your crontab. Exiting now.";
     exit;
