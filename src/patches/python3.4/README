@@ -1,0 +1,25 @@
+[Patching tailf for errors]:
+  Traceback (most recent call last):
+    File "/usr/local/bin/sshmonitor.py", line 275, in <module>
+      SSHMonitor(config_dict).main()
+    File "/usr/local/bin/sshmonitor.py", line 214, in main
+      self.tail_file(config_dict['logfile'])
+    File "/usr/local/bin/sshmonitor.py", line 159, in tail_file
+      for line in tailf(logfile):
+    File "/usr/lib/python3.4/site-packages/tailf/__init__.py", line 36, in tailf
+      buf += process.stdout.read()
+
+  TypeError: Can't convert 'NoneType' object to str implicitly
+
+  -- OR --
+
+  Traceback (most recent call last):
+    File "src/sshmonitor.py", line 11, in <module>
+      from tailf import tailf
+    File "/usr/lib/python3.4/site-packages/tailf/__init__.py", line 58
+      print "Error received. Errors: ", errors
+                                   ^
+  SyntaxError: Missing parentheses in call to 'print'
+
+[Run]:
+  sudo patch /usr/lib/python3.4/site-packages/tailf/__init__.py < tailf.patch
