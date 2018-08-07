@@ -63,7 +63,9 @@ class FileOpts():
         return os.path.isfile(file_name)
 
     def create_file(self,file_name):
+        logger.log("INFO", "File " + str(file_name) + " exists.")
         if not self.file_exists(file_name):
+            logger.log("INFO", "Creating file " + str(file_name) + ".")
             open(file_name, 'w')
 
     def dir_exists(self,dir_path):
@@ -71,17 +73,18 @@ class FileOpts():
 
     def mkdir_p(self,dir_path):
         try:
+            logger.log("Creating directory " + str(dir_path))
             os.makedirs(dir_path)
         except OSError as e:
             if e.errno == errno.EEXIST and self.dir_exists(dir_path):
                 pass
             else:
+                logger.log("ERROR", "mkdir error: " + str(e))
                 raise
     
 class SSHMonitor():
     
     def __init__(self, config_dict={}):
-
         self.credential_sanity_check()
         self.logfile_sanity_check(config_dict['logfile'])
         self.display_options()
@@ -96,7 +99,7 @@ class SSHMonitor():
     def credential_sanity_check(self):
         if (config_dict['email'] == 'example@gmail.com' or
             config_dict['password'] == 'password'):
-                print("\nERROR: Both E-mail and password are required!\n")
+                logger.log("ERROR", "Both E-mail and password are required!")
                 parser.print_help()
                 sys.exit(0)
 
@@ -119,9 +122,6 @@ class SSHMonitor():
                         + " does not exist. Please specify which log to use.")
                     sys.exit(0)
     
-    def file_exists(self,file):
-        return os.path.exists(file)
-
     def send_mail(self,sender,sendto,password,port,subject,body):
         try:
             message = "Subject: {}\n\n{}".format(subject,body)
@@ -129,11 +129,11 @@ class SSHMonitor():
             mail.starttls()
             mail.login(sender,password)
             mail.sendmail(sender, sendto, message)
-            print("\nSent email successfully.\n")
+            logger.log("INFO", "Sent email successfully.")
         except smtplib.SMTPAuthenticationError:
-            print("\nCould not athenticate with password and username!\n")
+            logger.log("ERROR", "Could not athenticate with password and username!")
     
-    def blocked_ip(self,title,ip,date):
+    def log_attempt(self,title,ip,date):
         if title == "success":
             w_file = fileOpts.successful_path() 
         elif title == "failed":
@@ -141,15 +141,18 @@ class SSHMonitor():
         elif title == "banned":
             w_file = fileOpts.banned_path()
         else:
+            logger.log("WARN", str(title) + " is not a known title name/type.")
             return
     
-        if not config_dict['logdisable']:
-            print("Using logfile: " + str(w_file))
-            f = open(w_file, 'a+')
-            f.write(str(ip) + " - " + str(date) + "\n")
-            f.close()
+        if config_dict['logdisable']:
+            logger.log("INFO", "Logging SSH attempts have been disabled.")
+            return
+        logger.log("INFO", "Logging SSH actions to file: " + str(w_file))
+        f = open(w_file, 'a+')
+        f.write(str(ip) + " - " + str(date) + "\n")
+        f.close()
     
-    def tail_file(self):
+    def tail_file(self, logfile):
         for line in tailf(config_dict['logfile']):
     
             #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
@@ -161,8 +164,8 @@ class SSHMonitor():
                 + " (.*) for.*$", line, re.I | re.M)
     
             if success:
-                sys.stdout.write("successful - " + success.group(3) + "\n")
-                self.blocked_ip("success", success.group(3), success.group(1))
+                logger.log("INFO", "Successful SSH login from " + success.group(3))
+                self.log_attempt("success", success.group(3), success.group(1))
                 self.send_mail(config_dict['email'], config_dict['email'],
                     config_dict['password'], config_dict['port'],
                     'New SSH Connection',"New ssh connection from "
@@ -173,8 +176,8 @@ class SSHMonitor():
                     + success.group(1))
                 time.sleep(1)
             if failed:
-                sys.stdout.write("failed - " + failed.group(2) + "\n")
-                self.blocked_ip("failed", failed.group(2), failed.group(1))
+                logger.log("INFO", "Failed SSH login from " + failed.group(2))
+                self.log_attempt("failed", failed.group(2), failed.group(1))
                 self.send_mail(config_dict['email'],config_dict['email'],
                     config_dict['password'],config_dict['port'],
                     'Failed SSH attempt',"Failed ssh attempt from "
@@ -183,8 +186,8 @@ class SSHMonitor():
                     + failed.group(1))
                 time.sleep(1)
             if blocked:
-                sys.stdout.write("banned - " + blocked.group(2) + "\n")
-                self.blocked_ip("banned",blocked.group(2),blocked.group(1))
+                logger.log("INFO", "IP address " + blocked.group(2) + " was banned!")
+                self.log_attempt("banned",blocked.group(2),blocked.group(1))
                 self.send_mail(config_dict['email'],config_dict['email'],
                     config_dict['password'],config_dict['port'],
                     'SSH IP Blocked', blocked.group(2)
@@ -192,7 +195,26 @@ class SSHMonitor():
                     + blocked.group(1)
                     + " for too many failed attempts.")
                 time.sleep(1)
-    
+
+    def main(self):
+
+        _version_ = re.search('\d\.\d', str(sys.version), re.M | re.I)
+
+        if _version_ is not None and _version_.group() == '2.7':
+            logger.log("INFO", "Python version set to 2.7.")
+        else:
+            logger.log("ERROR", "Only python version 2.7 is supported.")
+            sys.exit(0)
+
+        while True:
+            try:
+                self.tail_file(config_dict['logfile'])
+            except IOError as ioError:
+                logger.log("ERROR", "IOError: " + str(ioError))
+            except KeyboardInterrupt:
+                logger.log("INFO", " [Control C caught] - Exiting ImageCapturePy now!")
+                break
+
 if __name__ == '__main__':
 
     parser = OptionParser()
@@ -237,7 +259,6 @@ if __name__ == '__main__':
 
     logger   = Logging()
     fileOpts = FileOpts()
-    sshm = SSHMonitor(config_dict)
 
     if not fileOpts.dir_exists(fileOpts.root_directory()):
         fileOpts.mkdir_p(fileOpts.root_directory())
@@ -248,6 +269,4 @@ if __name__ == '__main__':
     if not fileOpts.file_exists('/var/log/sshmonitor.log'):
         fileOpts.create_file('/var/log/sshmonitor.log')
 
-    if len(sys.argv) > 4:
-        while True:
-            sshm.tail_file()
+    SSHMonitor(config_dict).main()
