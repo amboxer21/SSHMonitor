@@ -2,24 +2,11 @@
 > Monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not.
 ***
 
-#  EDIT: 
->Build scripts and setup.py scripts were removed because they need to be rebuilt properly.
-
-
-
-
-
-# BELOW IS NO LONGER RELEVENT!!
-
 ## Build program:
 
   **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py install`
 
-## Remove program:
-
-  **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py remove`
-
-## Modify version in setup.py via vim/nano before building:
+## Modify version in setup.py via vim/nano before building if building for PyPi:
 **`BEFORE(vim/nano setup.py):`**
 ```javascript
     setup(
