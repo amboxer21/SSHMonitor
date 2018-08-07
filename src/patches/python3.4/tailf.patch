@@ -1,0 +1,27 @@
+--- __init__.py.original	2018-08-07 12:01:38.495843304 -0400
++++ __init__.py.new	2018-08-07 12:03:21.100294011 -0400
+@@ -32,7 +32,7 @@
+     while True:
+         reads, writes, errors = select.select([process.stdout, process.stderr], [], [process.stdout, process.stderr], 0.1)
+         if process.stdout in reads:
+-            buf += process.stdout.read()
++            buf += str(process.stdout.read())
+             lines = buf.split('\n')
+             
+             if lines[-1] == '':
+@@ -55,7 +55,7 @@
+                 yield (None, stderr_input)
+ 
+         if process.stderr in errors or process.stdout in errors:
+-            print "Error received. Errors: ", errors
++            print("Error received. Errors: ", errors)
+             process = tailf_init(filename, tailf_command)
+             
+ 
+@@ -70,5 +70,5 @@
+         parser.error("Please provide filename as argument")
+     
+     for line in tailf(args[0], options.start_count):
+-        print line
++        print(line)
+     

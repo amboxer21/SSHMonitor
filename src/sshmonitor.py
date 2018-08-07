@@ -18,9 +18,6 @@ class Logging():
 
     def log(self,level,message):
         comm = re.search("(WARN|INFO|ERROR)", str(level), re.M)
-        if comm is None:
-            print(level + " is not a level. Use: WARN, ERROR, or INFO!")
-            return
         try:
             handler = logging.handlers.WatchedFileHandler(
                 os.environ.get("LOGFILE","/var/log/sshmonitor.log"))
@@ -29,9 +26,15 @@ class Logging():
             root = logging.getLogger()
             root.setLevel(os.environ.get("LOGLEVEL", str(level)))
             root.addHandler(handler)
-            # Log all calls to this class in the logfile no matter what.
-            logging.exception("(" + str(level) + ") " + "SSHMonitor - " + str(message))
-            # Print to stdout only if the verbose option is passed or log level = ERROR.
+            if comm is None:
+                print(level + " is not a level. Use: WARN, ERROR, or INFO!")
+                return
+            elif comm.group() == 'ERROR':
+                logging.error("(" + str(level) + ") " + "SSHMonitor - " + str(message))
+            elif comm.group() == 'INFO':
+                logging.info("(" + str(level) + ") " + "SSHMonitor - " + str(message))
+            elif comm.group() == 'WARN':
+                logging.warn("(" + str(level) + ") " + "SSHMonitor - " + str(message))
             if options.verbose or str(level) == 'ERROR':
                 print("(" + str(level) + ") " + "SSHMonitor - " + str(message))
         except Exception as e:
@@ -198,13 +201,9 @@ class SSHMonitor():
 
     def main(self):
 
-        _version_ = re.search('\d\.\d', str(sys.version), re.M | re.I)
+        _version_ = re.search('\d\.\d\.\d{1,2}', str(sys.version))
 
-        if _version_ is not None and _version_.group() == '2.7':
-            logger.log("INFO", "Python version set to 2.7.")
-        else:
-            logger.log("ERROR", "Only python version 2.7 is supported.")
-            sys.exit(0)
+        logger.log("INFO", "Python version set to " + str(_version_.group()) + ".")
 
         while True:
             try:
