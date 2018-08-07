@@ -86,9 +86,9 @@ if __name__ == '__main__':
 
     logger.log('INFO', 'Entering setup in setup.py')
 
-    setup(name='SSHMonitorPy',
-    version='1.0.0',
-    url='https://github.com/amboxer21/ImageCapturePy',
+    setup(name='sshmonitor',
+    version='0.0.7',
+    url='https://github.com/amboxer21/SSHMonitorPy',
     license='GPL-3.0',
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
