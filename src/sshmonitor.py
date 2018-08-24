@@ -76,7 +76,7 @@ class FileOpts():
 
     def mkdir_p(self,dir_path):
         try:
-            logger.log("Creating directory " + str(dir_path))
+            logger.log("INFO", "Creating directory " + str(dir_path))
             os.makedirs(dir_path)
         except OSError as e:
             if e.errno == errno.EEXIST and self.dir_exists(dir_path):
