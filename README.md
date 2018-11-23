@@ -5,3 +5,5 @@
 ### Build program:
 
   **[anthony@ghost SSHMonitorPy]$** `sudo python setup.py install`
+
+^^ NOTE: Check the Crontab and make sure it was actually created.
