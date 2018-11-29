@@ -70,6 +70,8 @@ class PrepareBuild():
         if count < 2 and install is not None:
             logger.log("INFO", "Installing crontab.")
             cron.write()
+            print("Please nesure that the crontab was actually installed!")
+            print("To do so please run(without quotes) => 'sudo contab -l -u root'")
 
 if __name__ == '__main__':
 
