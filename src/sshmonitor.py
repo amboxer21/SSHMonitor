@@ -6,43 +6,67 @@ import sys
 import time
 import logging
 import smtplib
+import threading
 import logging.handlers
 
 from tailf import tailf
 from optparse import OptionParser
+from email.MIMEMultipart import MIMEMultipart
 
-class Logging():
+class Logging(object):
 
-    def __init__(self):
-        pass
-
-    def log(self,level,message):
+    @staticmethod
+    def log(level,message,verbose=True):
         comm = re.search("(WARN|INFO|ERROR)", str(level), re.M)
         try:
             handler = logging.handlers.WatchedFileHandler(
-                os.environ.get("LOGFILE","/var/log/sshmonitor.log"))
+                os.environ.get("LOGFILE","/var/log/motiondetection.log")
+            )
             formatter = logging.Formatter(logging.BASIC_FORMAT)
             handler.setFormatter(formatter)
             root = logging.getLogger()
             root.setLevel(os.environ.get("LOGLEVEL", str(level)))
             root.addHandler(handler)
+            # Log all calls to this class in the logfile no matter what.
             if comm is None:
-                print(level + " is not a level. Use: WARN, ERROR, or INFO!")
+                print(str(level) + " is not a level. Use: WARN, ERROR, or INFO!")
                 return
             elif comm.group() == 'ERROR':
-                logging.error("(" + str(level) + ") " + "SSHMonitor - " + str(message))
+                logging.error(str(time.asctime(time.localtime(time.time()))
+                    + " - SSHMonitor - "
+                    + str(message)))
             elif comm.group() == 'INFO':
-                logging.info("(" + str(level) + ") " + "SSHMonitor - " + str(message))
+                logging.info(str(time.asctime(time.localtime(time.time()))
+                    + " - SSHMonitor - "
+                    + str(message)))
             elif comm.group() == 'WARN':
-                logging.warn("(" + str(level) + ") " + "SSHMonitor - " + str(message))
-            if options.verbose or str(level) == 'ERROR':
-                print("(" + str(level) + ") " + "SSHMonitor - " + str(message))
-        except Exception as e:
-            print("Error in Logging class => " + str(e))
+                logging.warn(str(time.asctime(time.localtime(time.time()))
+                    + " - SSHMonitor - "
+                    + str(message)))
+            if verbose or str(level) == 'ERROR':
+                print("(" + str(level) + ") "
+                    + str(time.asctime(time.localtime(time.time()))
+                    + " - SSHMonitor - "
+                    + str(message)))
+        except IOError as eIOError:
+            if re.search('\[Errno 13\] Permission denied:', str(eIOError), re.M | re.I):
+                print("(ERROR) SSHMonitor - Must be sudo to run SSHMonitor!")
+                sys.exit(0)
+            print("(ERROR) SSHMonitor - IOError in Logging class => "
+                + str(eIOError))
+            logging.error(str(time.asctime(time.localtime(time.time()))
+                + " - SSHMonitor - IOError => "
+                + str(eIOError)))
+        except Exception as eLogging:
+            print("(ERROR) SSHMonitor - Exception in Logging class => "
+                + str(eLogging))
+            logging.error(str(time.asctime(time.localtime(time.time()))
+                + " - SSHMonitor - Exception => " 
+                + str(eLogging)))
             pass
         return
 
-class FileOpts():
+class FileOpts(object):
 
     def __init__(self):
         pass
@@ -66,9 +90,9 @@ class FileOpts():
         return os.path.isfile(file_name)
 
     def create_file(self,file_name):
-        logger.log("INFO", "File " + str(file_name) + " exists.")
+        Logging.log("INFO", "File " + str(file_name) + " exists.")
         if not self.file_exists(file_name):
-            logger.log("INFO", "Creating file " + str(file_name) + ".")
+            Logging.log("INFO", "Creating file " + str(file_name) + ".")
             open(file_name, 'w')
 
     def dir_exists(self,dir_path):
@@ -76,20 +100,55 @@ class FileOpts():
 
     def mkdir_p(self,dir_path):
         try:
-            logger.log("INFO", "Creating directory " + str(dir_path))
+            Logging.log("INFO", "Creating directory " + str(dir_path))
             os.makedirs(dir_path)
         except OSError as e:
             if e.errno == errno.EEXIST and self.dir_exists(dir_path):
                 pass
             else:
-                logger.log("ERROR", "mkdir error: " + str(e))
+                Logging.log("ERROR", "mkdir error: " + str(e))
                 raise
+
+class Mail(object):
+
+    __disabled__ = False
+
+    @staticmethod
+    def send(sender,to,password,port,subject,body):
+        try:
+            if not Mail.__disabled__:
+                message = MIMEMultipart()
+                message['Body'] = body
+                message['Subject'] = subject
+                mail = smtplib.SMTP('smtp.gmail.com',port)
+                mail.starttls()
+                mail.login(sender,password)
+                mail.sendmail(sender, to, message.as_string())
+                mail.quit()
+                Logging.log("INFO", "(Mail.send) - Sent email successfully!")
+            else:
+                Logging.log("WARN", "(Mail.send) - Sending mail has been disabled!")
+        except smtplib.SMTPAuthenticationError:
+            Logging.log("WARN", "(Mail.send) - Could not athenticate with password and username!")
+        except Exception as e:
+            Logging.log("ERROR",
+                "(Mail.send) - Unexpected error in Mail.send() error e => "
+                + str(e))
+            pass
     
-class SSHMonitor():
+class SSHMonitor(object):
     
     def __init__(self, config_dict={}):
+
+        self.email         = config_dict['email']
+        self.logfile       = config_dict['logfile']
+        self.password      = config_dict['password']
+        self.email_port    = config_dict['email_port']
+        self.disable_log   = config_dict['disable_log']
+        self.disable_email = config_dict['disable_email']
+
         self.credential_sanity_check()
-        self.logfile_sanity_check(config_dict['logfile'])
+        self.logfile_sanity_check(self.logfile)
         self.display_options()
 
     def display_options(self):
@@ -97,45 +156,43 @@ class SSHMonitor():
         if config_dict['verbose']:
             for option in config_dict.keys():
                 verbose[option] = config_dict[option]
-            logger.log("INFO", "Options: " + str(verbose))
+            Logging.log("INFO", "Options: " + str(verbose))
 
     def credential_sanity_check(self):
-        if (config_dict['email'] == 'example@gmail.com' or
-            config_dict['password'] == 'password'):
-                logger.log("ERROR", "Both E-mail and password are required!")
-                parser.print_help()
-                sys.exit(0)
+        if not self.disable_email and (self.email is None or self.password is None):
+            Logging.log("ERROR",
+                "(SSHMonitor.__init__) - Both E-mail and password are required!")
+            parser.print_help()
+            sys.exit(0)
 
     def logfile_sanity_check(self,logfile):
 
-        log_files = ['messages']
-
         if os.path.exists(logfile):
             config_dict['logfile'] = logfile
-            logger.log("INFO", "logfile(1): " + str(config_dict['logfile']))
+            Logging.log("INFO", "logfile(1): " + str(config_dict['logfile']))
         elif logfile == '/var/log/auth.log' and not os.path.exists(logfile):
-            for log_file in log_files:
+            for log_file in ('messages',):
                 if os.path.exists('/var/log/' + str(log_file)):
                     config_dict['logfile'] = '/var/log/' + str(log_file)
-                    logger.log("INFO", "logfile(2): " + str(config_dict['logfile']))
+                    Logging.log("INFO", "logfile(2): " + str(config_dict['logfile']))
                     break
                 else:
-                    logger.log("ERROR","Log file " 
+                    Logging.log("ERROR","Log file " 
                         + logfile
                         + " does not exist. Please specify which log to use.")
                     sys.exit(0)
-    
-    def send_mail(self,sender,sendto,password,port,subject,body):
+
+    @staticmethod
+    def start_thread(proc,*args):
         try:
-            message = "Subject: {}\n\n{}".format(subject,body)
-            mail = smtplib.SMTP('smtp.gmail.com', port)
-            mail.starttls()
-            mail.login(sender,password)
-            mail.sendmail(sender, sendto, message)
-            logger.log("INFO", "Sent email successfully.")
-        except smtplib.SMTPAuthenticationError:
-            logger.log("ERROR", "Could not athenticate with password and username!")
-    
+            t = threading.Thread(target=proc,args=args)
+            t.daemon = True
+            t.start()
+        except Exception as eStartThread:
+            Logging.log("ERROR",
+                "Threading exception eStartThread => "
+                + str(eStartThread))
+
     def log_attempt(self,title,ip,date):
         if title == "success":
             w_file = fileOpts.successful_path() 
@@ -144,128 +201,130 @@ class SSHMonitor():
         elif title == "banned":
             w_file = fileOpts.banned_path()
         else:
-            logger.log("WARN", str(title) + " is not a known title name/type.")
+            Logging.log("WARN", str(title) + " is not a known title name/type.")
             return
     
-        if config_dict['logdisable']:
-            logger.log("INFO", "Logging SSH attempts have been disabled.")
+        if self.disable_log:
+            Logging.log("INFO", "Logging SSH attempts have been disabled.")
             return
-        logger.log("INFO", "Logging SSH actions to file: " + str(w_file))
+        Logging.log("INFO", "Logging SSH actions to file: " + str(w_file))
         f = open(w_file, 'a+')
         f.write(str(ip) + " - " + str(date) + "\n")
         f.close()
     
-    def tail_file(self, logfile):
-        for line in tailf(config_dict['logfile']):
-    
-            #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
-            success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password"
-                + " for (.*) from (.*) port.*$", line, re.I | re.M)
-            failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
-                + " for.*from (.*) port.*$", line, re.I | re.M)
-            blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
-                + " (.*) for.*$", line, re.I | re.M)
-    
-            if success:
-                logger.log("INFO", "Successful SSH login from " + success.group(3))
-                self.log_attempt("success", success.group(3), success.group(1))
-                self.send_mail(config_dict['email'], config_dict['email'],
-                    config_dict['password'], config_dict['port'],
-                    'New SSH Connection',"New ssh connection from "
-                    + success.group(3)
-                    + " for user "
-                    + success.group(2)
-                    + " at "
-                    + success.group(1))
-                time.sleep(1)
-            if failed:
-                logger.log("INFO", "Failed SSH login from " + failed.group(2))
-                self.log_attempt("failed", failed.group(2), failed.group(1))
-                self.send_mail(config_dict['email'],config_dict['email'],
-                    config_dict['password'],config_dict['port'],
-                    'Failed SSH attempt',"Failed ssh attempt from "
-                    + failed.group(2)
-                    + " at "
-                    + failed.group(1))
-                time.sleep(1)
-            if blocked:
-                logger.log("INFO", "IP address " + blocked.group(2) + " was banned!")
-                self.log_attempt("banned",blocked.group(2),blocked.group(1))
-                self.send_mail(config_dict['email'],config_dict['email'],
-                    config_dict['password'],config_dict['port'],
-                    'SSH IP Blocked', blocked.group(2)
-                    + " was banned at "
-                    + blocked.group(1)
-                    + " for too many failed attempts.")
-                time.sleep(1)
+    def tail_file(self):
 
-    def main(self):
+        while(True):
 
-        _version_ = re.search('\d\.\d\.\d{1,2}', str(sys.version))
-
-        logger.log("INFO", "Python version set to " + str(_version_.group()) + ".")
-
-        while True:
             try:
-                self.tail_file(config_dict['logfile'])
+
+                for line in tailf(self.logfile):
+    
+                    #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
+                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password"
+                        + " for (.*) from (.*) port.*$", line, re.I | re.M)
+                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
+                        + " for.*from (.*) port.*$", line, re.I | re.M)
+                    blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
+                        + " (.*) for.*$", line, re.I | re.M)
+            
+                    if success:
+                        Logging.log("INFO", "Successful SSH login from "
+                            + success.group(3))
+                        SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
+                        SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
+                            'New SSH Connection',"New ssh connection from "
+                            + success.group(3)
+                            + " for user "
+                            + success.group(2)
+                            + " at "
+                            + success.group(1))
+                        time.sleep(1)
+                    elif failed:
+                        Logging.log("INFO", "Failed SSH login from "
+                            + failed.group(2))
+                        SSHMonitor.start_thread(self.log_attempt,"failed", failed.group(2), failed.group(1))
+                        SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
+                            'Failed SSH attempt',"Failed ssh attempt from "
+                            + failed.group(2)
+                            + " at "
+                            + failed.group(1))
+                        time.sleep(1)
+                    elif blocked:
+                        Logging.log("INFO", "IP address "
+                            + blocked.group(2) 
+                            + " was banned!")
+                        SSHMonitor.start_thread(self.log_attempt,"banned",blocked.group(2),blocked.group(1))
+                        SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
+                            'SSH IP Blocked'
+                            + blocked.group(2)
+                            + " was banned at "
+                            + blocked.group(1)
+                            + " for too many failed attempts.")
+                        time.sleep(1)
             except IOError as ioError:
-                logger.log("ERROR", "IOError: " + str(ioError))
+                Logging.log("ERROR", "IOError: " + str(ioError))
             except KeyboardInterrupt:
-                logger.log("INFO", " [Control C caught] - Exiting ImageCapturePy now!")
+                Logging.log("INFO", " [Control C caught] - Exiting SSHMonitor now!")
                 break
 
 if __name__ == '__main__':
 
     parser = OptionParser()
-    parser.add_option("-e", "--email",
-        dest='email',
-        default='example@gmail.com',
-        help='"This argument is required!"')
-    parser.add_option("-p", "--password",
-        dest='password',
-        default='password',
-        help='"This argument is required!"')
-    parser.add_option("-P", "--port",
-        dest='port', type="int",
-        default=587,
-        help='"Deafults to port 587"')
-    parser.add_option("-l", "--log-file",
-        dest='logfile',
-        default='/var/log/auth.log',
-        help='"Defaults to /var/log/auth.log"')
-    parser.add_option("-g", "--log-disable",
-        dest='logdisable', action="store_true",
-        default=False,
-        help='"SSHMonitor autologs IPs by default. This turns logging off."')
+    parser.add_option('-D', '--disable-email',
+        dest='disable_email', action='store_true', default=False,
+        help='This option allows you to disable the sending of E-mails.')
+    parser.add_option('-E', '--email-port',
+        dest='email_port', type='int', default=587,
+        help='E-mail port defaults to port 587')
+    parser.add_option("-g", "--disable-log",
+        dest='disable_log', action="store_true", default=False,
+        help='SSHMonitor autologs IPs by default - This turns logging off.')
     parser.add_option("-v", "--verbose",
-        dest='verbose', action="store_true",
-        default=False,
-        help='"Prints args passed to SSHMonitor."')
+        dest='verbose', action="store_true", default=False,
+        help='This option prints the args passed to SSHMonitor on the '
+            + 'command line.')
+    parser.add_option("-l", "--log-file",
+        dest='logfile', default='/var/log/auth.log',
+        help='This is the log file that SSHMonitor tails to '
+            + 'monitor for ssh activity. The log defaults to '
+            + '/var/log/auth.log')
+    parser.add_option('-e', '--email',
+        dest='email',
+        help='This argument is required unless you pass the '
+            + 'pass the --disable-email flag on the command line. '
+            + 'Your E-mail address is used to notify you that'
+            + 'there is activity related to ssh attempts.')
+    parser.add_option('-p', '--password',
+        dest='password',
+        help='This argument is required unless you pass the '
+            + 'pass the --disable-email flag on the command line. '
+            + 'Your E-mail password is used to send the pictures '
+            + 'taken as well as notify you of motion detected.')
     (options, args) = parser.parse_args()
 
-    files = [
-        'banned_ips',
-        'successful',
-        'banned']
+    Mail.__disabled__ = options.disable_email
 
     config_dict = {
         'email': options.email,
-        'password': options.password,
-        'port': options.port,
         'logfile': options.logfile,
-        'logdisable': options.logdisable,
-        'verbose': options.verbose}
+        'verbose': options.verbose,
+        'password': options.password,
+        'email_port': options.email_port,
+        'disable_log': options.disable_log,
+        'disable_email': options.disable_email
+    }
 
-    logger   = Logging()
     fileOpts = FileOpts()
 
     if not fileOpts.dir_exists(fileOpts.root_directory()):
         fileOpts.mkdir_p(fileOpts.root_directory())
-    for f in files:
+
+    for f in ['banned_ips','successful','banned']:
         if not fileOpts.file_exists(fileOpts.root_directory() + "/" + f): 
             fileOpts.create_file(fileOpts.root_directory() + "/" + f)
 
     if not fileOpts.file_exists('/var/log/sshmonitor.log'):
         fileOpts.create_file('/var/log/sshmonitor.log')
 
-    SSHMonitor(config_dict).main()
+    SSHMonitor(config_dict).tail_file()
