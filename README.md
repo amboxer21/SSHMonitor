@@ -1,5 +1,6 @@
 # SSHMonitor
 > Monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not.
+
 ***
 
 ### Build program:
@@ -8,8 +9,14 @@
 
 ^^ NOTE: Check the Crontab and make sure it was actually created.
 
-You can install sshmonitor via pip as well.
+***
 
+#### You can install sshmonitor via pip as well.
+
+Website:
 [https://pypi.org/project/sshmonitor/](https://pypi.org/project/sshmonitor/)
 
->pip install sshmonitor
+Installation command:
+```python
+pip install sshmonitor
+```
