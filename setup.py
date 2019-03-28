@@ -118,4 +118,3 @@ if __name__ == '__main__':
 
     from crontab import CronTab
     prepareBuild.cron_tab()
-    print('Please make sure the crontab installed!')
