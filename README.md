@@ -20,3 +20,7 @@ Installation command:
 ```python
 pip install sshmonitor
 ```
+
+### Patching Python 3.4
+
+If youre using python 3.4, you might need a patch. You can find the info [HERE](https://github.com/amboxer21/SSHMonitor/blob/master/src/patches/python3.4/README)
