@@ -11,3 +11,10 @@ version 0.0.2
 version 0.0.3 
 
 ----------------------------------------------------------------
+
+[Date/Time]
+05/22/19 11:43am
+
+[REASON]
+I recently wrote my own implementation of the problematic pytailf, so i removed the import and integrated it directly into the
+sshmonitor.py script. This made the patch obsolete, so I removed the patch dir from the project.
