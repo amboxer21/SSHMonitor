@@ -71,7 +71,7 @@ class PrepareBuild():
             logger.log("INFO", "Installing crontab.")
             cron.write()
             print("Please nesure that the crontab was actually installed!")
-            print("To do so please run(without quotes) => 'sudo contab -l -u root'")
+            print("To do so please run(without quotes) => 'sudo crontab -l -u root'")
 
 if __name__ == '__main__':
 
@@ -89,13 +89,13 @@ if __name__ == '__main__':
     logger.log('INFO', 'Entering setup in setup.py')
 
     setup(name='sshmonitor',
-    version='0.0.7',
+    version='1.0.0',
     url='https://github.com/amboxer21/SSHMonitorPy',
     license='GPL-3.0',
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
-    description='A program to capture a picture and geolocation data upon 3 incorrect or '
-        + 'number of specified attempts at the login screen. This data is then e-mailed to you.',
+    description="Monitors incoming ssh requests and will notify you on failed, successful or "
+        + "banned(IP via iptables/sshgaurd) attempts whether they're successful or not.",
     packages=find_packages(exclude=['tests']),
     long_description=open('README.md').read(),
     classifiers=[
