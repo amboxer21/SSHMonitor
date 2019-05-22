@@ -1,7 +1,7 @@
 # SSHMonitor
 > Monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not. PLEASE FORK INSTEAD OF CLONE THIS REPO. I would greatly appreciate it! Also, you are going to need to setup an outgoing E-mail server in order for the program to work.
 
-This program was written using Python version 2.7 but I have tried to accommodate Python versions 3.x as well. A patch was needed for Python version 3.4 to get the pytailf package working correctly. That patch can be found on the bottom of this readme.
+This program was written using Python version 2.7 but should work for Python versions 3.x as well.
 
 ***
 
