@@ -89,7 +89,7 @@ if __name__ == '__main__':
     logger.log('INFO', 'Entering setup in setup.py')
 
     setup(name='sshmonitor',
-    version='1.0.0',
+    version='1.0.1',
     url='https://github.com/amboxer21/SSHMonitorPy',
     license='GPL-3.0',
     author='Anthony Guevara',
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         ('/usr/local/bin/', ['src/sshmonitor.py']),
         ('/home/root/.ssh/' ,['src/system/home/user/.ssh/is_sshm_running.sh'])],
     zip_safe=True,
-    setup_requires=['pytailf', 'python-crontab'],)
+    setup_requires=['python-crontab'],)
 
     from crontab import CronTab
     prepareBuild.cron_tab()
