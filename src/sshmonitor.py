@@ -18,7 +18,7 @@ from email.MIMEMultipart import MIMEMultipart
 class Logging(object):
 
     @staticmethod
-    def log(level,message,verbose=False):
+    def log(level,message):
         comm = re.search("(WARN|INFO|ERROR)", str(level), re.M)
         try:
             handler = logging.handlers.WatchedFileHandler(
@@ -45,7 +45,7 @@ class Logging(object):
                 logging.warn(str(time.asctime(time.localtime(time.time()))
                     + " - SSHMonitor - "
                     + str(message)))
-            if verbose or str(level) == 'ERROR':
+            if options.verbose or str(level) == 'ERROR':
                 print("(" + str(level) + ") "
                     + str(time.asctime(time.localtime(time.time()))
                     + " - SSHMonitor - "
@@ -119,6 +119,7 @@ class Mail(object):
     def send(sender,to,password,port,subject,body):
         try:
             if not Mail.__disabled__:
+                Logging.log("INFO", "(Mail.send) - body "+str(body))
                 message = MIMEMultipart()
                 message['Body'] = body
                 message['Subject'] = subject
