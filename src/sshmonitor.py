@@ -22,7 +22,7 @@ class Logging(object):
         comm = re.search("(WARN|INFO|ERROR)", str(level), re.M)
         try:
             handler = logging.handlers.WatchedFileHandler(
-                os.environ.get("LOGFILE","/var/log/motiondetection.log")
+                os.environ.get("LOGFILE","/var/log/sshmonitor.log")
             )
             formatter = logging.Formatter(logging.BASIC_FORMAT)
             handler.setFormatter(formatter)
@@ -354,8 +354,8 @@ if __name__ == '__main__':
         dest='password',
         help='This argument is required unless you pass the '
             + 'pass the --disable-email flag on the command line. '
-            + 'Your E-mail password is used to send the pictures '
-            + 'taken as well as notify you of motion detected.')
+            + 'Your E-mail password is used to send an E-mail of the ip '
+            + 'of the user sshing into your box, successful or not.')
     (options, args) = parser.parse_args()
 
     Mail.__disabled__ = options.disable_email
