@@ -11,7 +11,7 @@ from subprocess import Popen, call, PIPE
 from setuptools import setup, find_packages
 from distutils.errors import DistutilsError, DistutilsExecError
 
-class Check():
+class Check(object):
     def __init__(self):
         self.sys_dependencies = {
             'rpm': ('python-devel','sqlite3-dbf','syslog-ng','sendmail-cf',
@@ -49,7 +49,7 @@ class Check():
         except DistutilsExecError as distutilsExecError:
             logger.log("ERROR", "Exception DistutilsExecError: " + str(distutilsExecError))
 
-class PrepareBuild():
+class PrepareBuild(object):
     def __init__(self):
         pass
 
@@ -97,7 +97,8 @@ if __name__ == '__main__':
     description="Monitors incoming ssh requests and will notify you on failed, successful or "
         + "banned(IP via iptables/sshgaurd) attempts whether they're successful or not.",
     packages=find_packages(exclude=['tests']),
-    long_description=open('README.md').read(),
+    #long_description=open('README.md').read(),
+    #long_description_content_type="text/markdown",
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',

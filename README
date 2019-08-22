@@ -38,3 +38,12 @@ repository=https://testpypi.python.org/pypi
 username=username
 password='password'
 
+
+Compile C Module
+
+gcc -c -fPIC masquerade.c -o masquerade.o
+gcc masquerade.o -shared -o libmasquerade.so
+
+or 
+
+gcc -shared -o libmasquerade.so -fPIC masquerade.c
