@@ -65,3 +65,9 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> libmasquerade.masquerade('anthony')
 anthony
 
+
+Compile GTK UI
+gcc masquerade.c -o masquerade `pkg-config --cflags --libs gtk+-2.0`
+
+Create shared object via gcc
+gcc -shared -o libmasquerade.so -fPIC masquerade.c
