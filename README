@@ -47,3 +47,21 @@ gcc masquerade.o -shared -o libmasquerade.so
 or 
 
 gcc -shared -o libmasquerade.so -fPIC masquerade.c
+
+>>> import os
+>>> import ctypes
+>>> shared_object = 'libmasquerade.so'
+>>> shared_object_path = os.path.join(*(os.path.split(os.path.__file__)[:-1] + (shared_object, )))
+>>> User = ctypes.cdll.LoadLibrary(shared_object_path)
+>>> User.masquerade('anthony')
+
+anthony@ghost:~/Documents/Python/sshmonitor/src$ sudo python
+Python 2.7.13 (default, Sep 26 2018, 18:42:22) 
+[GCC 6.3.0 20170516] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import os, ctypes
+>>> from ctypes import cdll
+>>> libmasquerade = cdll.LoadLibrary('/home/anthony/Documents/Python/sshmonitor/src/libmasquerade.so')
+>>> libmasquerade.masquerade('anthony')
+anthony
+
