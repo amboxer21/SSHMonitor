@@ -4,23 +4,28 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <inttypes.h>
 
-int masquerade(char *username, char *command) {
+#define NOTIFY "/home/anthony/Documents/Python/sshmonitor/src/notify-gtk TEST"
+
+int masquerade(char *username, char *data) {
 
     char *path = getenv("PATH");
-    char pathenv[strlen(path) + sizeof("PATH=")];
-    sprintf(pathenv, "PATH=%s", path);
-    char *envp[] = {pathenv, NULL};
-    char *tests[] = {"sudo", "-i", "su", username, "-c", command, NULL};
-    execvpe(tests[0], tests, envp);
+    ssize_t psize = strlen(path) + sizeof("PATH=");
 
-    return 0;
+    char pathenv[psize];
+    snprintf(pathenv, psize, "PATH=%s", path);
+    
+    char *envp[] = {pathenv, NULL};
+    char *arguments[] = {"env", "DISPLAY=:0", "sudo", "-i", "su", "anthony", "-c", NOTIFY, NULL};
+    
+    return execvpe(arguments[0], arguments, envp);
 
 }
 
 int main(int argc, char *argv[]) {
 
-    masquerade(argv[1], "whoami");
+    masquerade(argv[1], argv[2]);
 
     return 0;
 }

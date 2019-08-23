@@ -71,3 +71,6 @@ gcc masquerade.c -o masquerade `pkg-config --cflags --libs gtk+-2.0`
 
 Create shared object via gcc
 gcc -shared -o libmasquerade.so -fPIC masquerade.c
+
+Set env
+env DISPLAY=:0

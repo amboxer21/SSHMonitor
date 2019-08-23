@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,24 +6,6 @@
 // GTK header files
 #include <glib.h>
 #include <gtk/gtk.h>
-
-#define WHOAMI "/usr/bin/whoami"
-#define PYTHON "/usr/bin/python"
-
-int masquerade(char *username, char *command) {
-
-    char *path = getenv("PATH");
-    ssize_t psize = strlen(path) + sizeof("PATH=");
-
-    char pathenv[psize];
-    snprintf(pathenv, psize, "PATH=%s", path);
-
-    char *envp[] = {pathenv, NULL};
-    char *arguments[] = {"sudo", "-i", "su", (char *)username, "-c", WHOAMI, NULL};
-
-    return execvpe(arguments[0], arguments, envp);
-
-}
 
 static void destroy_event(GtkWidget *widget, gpointer data) {
   gtk_main_quit();
@@ -74,7 +54,9 @@ int main(int argc, char *argv[]) {
     gtk_text_buffer_get_bounds(buffer, &start, &end);
 
     gtk_text_buffer_get_start_iter(buffer, &iter);
-    gtk_text_buffer_insert(buffer, &iter, "TEST", -1);
+    if(argv[1] != NULL) {
+        gtk_text_buffer_insert(buffer, &iter, argv[1], -1);
+    }
 
     //g_signal_connect_swapped(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
     //g_signal_connect(G_OBJECT(button), "button_press_event", G_CALLBACK(callback), NULL);
