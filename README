@@ -48,6 +48,9 @@ or
 
 gcc -shared -o libmasquerade.so -fPIC masquerade.c
 
+Compile masquerade(uses pthreads)
+gcc masquerade.c -o masquerade -lpthreads
+
 >>> import os
 >>> import ctypes
 >>> shared_object = 'libmasquerade.so'
