@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import fcntl
+import ctypes
 import select
 import logging
 import smtplib
@@ -12,6 +13,7 @@ import threading
 import subprocess
 import logging.handlers
 
+from ctypes import cdll
 from optparse import OptionParser
 from email.mime.text import MIMEText
 
@@ -193,6 +195,10 @@ class SSHMonitor(object):
     
     def __init__(self, config_dict={}):
 
+        lib  = "libmasquerade.so"
+        path = "/home/anthony/Documents/Python/sshmonitor/src/"
+        self.user = cdll.LoadLibrary(path+lib)
+
         self.email         = config_dict['email']
         self.logfile       = config_dict['logfile']
         self.password      = config_dict['password']
@@ -286,6 +292,13 @@ class SSHMonitor(object):
                     if success:
                         Logging.log("INFO", "Successful SSH login from "
                             + success.group(3))
+                        SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                            "New ssh connection from "
+                            + success.group(3)
+                            + " For user "
+                            + success.group(2)
+                            + " at "
+                            + success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'New SSH Connection',"New ssh connection from "
@@ -298,6 +311,11 @@ class SSHMonitor(object):
                     elif failed:
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
+                        SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                            'Failed SSH attempt',"Failed ssh attempt from "
+                            + failed.group(2)
+                            + " at "
+                            + success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"failed", failed.group(2), failed.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'Failed SSH attempt',"Failed ssh attempt from "
@@ -309,6 +327,12 @@ class SSHMonitor(object):
                         Logging.log("INFO", "IP address "
                             + blocked.group(2) 
                             + " was banned!")
+                        SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                            'SSH IP Blocked'
+                            + blocked.group(2)
+                            + " was banned at "
+                            + blocked.group(1)
+                            + " for too many failed attempts.")
                         SSHMonitor.start_thread(self.log_attempt,"banned",blocked.group(2),blocked.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'SSH IP Blocked'
