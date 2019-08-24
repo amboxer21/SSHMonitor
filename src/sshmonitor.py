@@ -282,7 +282,7 @@ class SSHMonitor(object):
                 for line in self.tail.f(self.logfile):
     
                     #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
-                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password"
+                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted (.*pam|password)"
                         + " for (.*) from (.*) port.*$", line, re.I | re.M)
                     failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
                         + " for.*from (.*) port.*$", line, re.I | re.M)
