@@ -195,9 +195,9 @@ class SSHMonitor(object):
     
     def __init__(self, config_dict={}):
 
-        lib  = "libmasquerade.so"
-        path = "/home/anthony/Documents/Python/sshmonitor/src/"
-        self.user = cdll.LoadLibrary(path+lib)
+        #lib  = "libmasquerade.so"
+        #path = "/home/anthony/Documents/Python/sshmonitor/src/"
+        #self.user = cdll.LoadLibrary(path+lib)
 
         self.email         = config_dict['email']
         self.logfile       = config_dict['logfile']
@@ -284,55 +284,55 @@ class SSHMonitor(object):
                     #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
                     success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted (.*pam|password)"
                         + " for (.*) from (.*) port.*$", line, re.I | re.M)
-                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
-                        + " for.*from (.*) port.*$", line, re.I | re.M)
+                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*(Authentication failure|Failed password)" 
+                        + " for.*from (.*)( port.*|)$", line, re.I | re.M)
                     blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
                         + " (.*) for.*$", line, re.I | re.M)
-            
-                    if success:
+
+                    if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
-                            + success.group(3))
-                        SSHMonitor.start_thread(self.user.masquerade,'anthony',
-                            "New ssh connection from "
-                            + success.group(3)
-                            + " For user "
-                            + success.group(2)
-                            + " at "
-                            + success.group(1))
+                            + success.group(4))
+                        #SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                            #"New ssh connection from "
+                            #+ success.group(4)
+                            #+ " For user "
+                            #+ success.group(3)
+                            #+ " at "
+                            #+ success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'New SSH Connection',"New ssh connection from "
-                            + success.group(3)
+                            + success.group(4)
                             + " for user "
-                            + success.group(2)
+                            + success.group(3)
                             + " at "
                             + success.group(1))
                         time.sleep(1)
-                    elif failed:
+                    elif failed is not None:
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
-                        SSHMonitor.start_thread(self.user.masquerade,'anthony',
-                            'Failed SSH attempt',"Failed ssh attempt from "
-                            + failed.group(2)
-                            + " at "
-                            + success.group(1))
+                        #SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                            #'Failed SSH attempt',"Failed ssh attempt from "
+                            #+ failed.group(3)
+                            #+ " at "
+                            #+ success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"failed", failed.group(2), failed.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'Failed SSH attempt',"Failed ssh attempt from "
-                            + failed.group(2)
+                            + failed.group(3)
                             + " at "
                             + failed.group(1))
                         time.sleep(1)
-                    elif blocked:
+                    elif blocked is not None:
                         Logging.log("INFO", "IP address "
                             + blocked.group(2) 
                             + " was banned!")
-                        SSHMonitor.start_thread(self.user.masquerade,'anthony',
-                            'SSH IP Blocked'
-                            + blocked.group(2)
-                            + " was banned at "
-                            + blocked.group(1)
-                            + " for too many failed attempts.")
+                        #SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                            #'SSH IP Blocked'
+                            #+ blocked.group(2)
+                            #+ " was banned at "
+                            #+ blocked.group(1)
+                            #+ " for too many failed attempts.")
                         SSHMonitor.start_thread(self.log_attempt,"banned",blocked.group(2),blocked.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'SSH IP Blocked'
