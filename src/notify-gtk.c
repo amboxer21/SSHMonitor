@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
     GtkWidget *view;
     GtkWidget *table;
     GtkWidget *window;
+    GtkWidget *button;
     GtkWidget *scrolledwindow;
 
     gchar *text;
@@ -34,10 +35,10 @@ int main(int argc, char *argv[]) {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), NULL);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(window), 300, 100);
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 100);
     gtk_widget_show(window);
 
-    table = gtk_table_new(10, 10, TRUE);
+    table = gtk_table_new(6, 5, TRUE);
     gtk_container_add(GTK_CONTAINER(window), table);
     gtk_widget_show(table);
 
@@ -45,10 +46,15 @@ int main(int argc, char *argv[]) {
     gtk_widget_show(view);
 
     scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy((GtkScrolledWindow *)scrolledwindow, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwindow), GTK_SHADOW_IN);
     gtk_container_add(GTK_CONTAINER(scrolledwindow), view);
-    gtk_table_attach_defaults(GTK_TABLE(table), scrolledwindow, 0, 10, 0, 10);
+    gtk_table_attach_defaults(GTK_TABLE(table), scrolledwindow, 0, 5, 0, 5);
     gtk_widget_show(scrolledwindow);
+
+    button = gtk_button_new_with_label("Close");
+    gtk_table_attach_defaults(GTK_TABLE(table), button, 1, 4, 5, 6);
+    gtk_widget_show(button);
 
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
     gtk_text_buffer_get_bounds(buffer, &start, &end);
@@ -58,9 +64,7 @@ int main(int argc, char *argv[]) {
         gtk_text_buffer_insert(buffer, &iter, argv[1], -1);
     }
 
-    //g_signal_connect_swapped(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
-    //g_signal_connect(G_OBJECT(button), "button_press_event", G_CALLBACK(callback), NULL);
-    //g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(send), context_object);
+    g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect_swapped(G_OBJECT(window), "destroy-event", G_CALLBACK(destroy_event), NULL);
     g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(delete_event), NULL);
 
