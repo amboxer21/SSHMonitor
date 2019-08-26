@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
     args.data     = argv[2];
     args.username = argv[1];
-    args.program  = "/home/anthony/Documents/Python/sshmonitor/src/notify-gtk";
+    args.program  = "/usr/local/bin/notify-gtk";
 
     pthread_t thread_id;
 
