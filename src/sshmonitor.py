@@ -280,18 +280,19 @@ class SSHMonitor(object):
             try:
 
                 for line in self.tail.f(self.logfile):
-    
+
                     #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
-                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted (.*pam|password)"
+                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password"
                         + " for (.*) from (.*) port.*$", line, re.I | re.M)
-                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*(Authentication failure|Failed password)" 
-                        + " for.*from (.*)( port.*|)$", line, re.I | re.M)
+                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
+                        + " for.*from (.*) port.*$", line, re.I | re.M)
                     blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
                         + " (.*) for.*$", line, re.I | re.M)
+    
 
                     if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
-                            + success.group(4))
+                            + success.group(3))
                         #SSHMonitor.start_thread(self.user.masquerade,'anthony',
                             #"New ssh connection from "
                             #+ success.group(4)
@@ -302,9 +303,9 @@ class SSHMonitor(object):
                         SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'New SSH Connection',"New ssh connection from "
-                            + success.group(4)
-                            + " for user "
                             + success.group(3)
+                            + " for user "
+                            + success.group(2)
                             + " at "
                             + success.group(1))
                         time.sleep(1)
@@ -319,7 +320,7 @@ class SSHMonitor(object):
                         SSHMonitor.start_thread(self.log_attempt,"failed", failed.group(2), failed.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'Failed SSH attempt',"Failed ssh attempt from "
-                            + failed.group(3)
+                            + failed.group(2)
                             + " at "
                             + failed.group(1))
                         time.sleep(1)
