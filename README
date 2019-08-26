@@ -77,3 +77,8 @@ gcc -shared -o libmasquerade.so -fPIC masquerade.c -lpthread
 
 Set env
 env DISPLAY=:0
+
+
+Debugging sshmonitor.py
+
+sudo gdb --args python -dv sshmonitor.py --disable-email --verbose

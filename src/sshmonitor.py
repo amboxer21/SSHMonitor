@@ -195,16 +195,13 @@ class SSHMonitor(object):
     
     def __init__(self, config_dict={}):
 
-        #lib  = "libmasquerade.so"
-        #path = "/home/anthony/Documents/Python/sshmonitor/src/"
-        #self.user = cdll.LoadLibrary(path+lib)
-
         self.email         = config_dict['email']
         self.logfile       = config_dict['logfile']
         self.password      = config_dict['password']
         self.email_port    = config_dict['email_port']
         self.disable_log   = config_dict['disable_log']
         self.disable_email = config_dict['disable_email']
+        self.libmasquerade = config_dict['libmasquerade']
 
         self.tail = Tail()
 
@@ -244,10 +241,10 @@ class SSHMonitor(object):
                     sys.exit(0)
 
     @staticmethod
-    def start_thread(proc,*args):
+    def start_thread(proc,daemonize=True,*args):
         try:
             t = threading.Thread(target=proc,args=args)
-            t.daemon = True
+            t.daemon = daemonize
             t.start()
         except Exception as eStartThread:
             Logging.log("ERROR",
@@ -293,11 +290,11 @@ class SSHMonitor(object):
                     if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
                             + success.group(3))
-                        #SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                        #SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                             #"New ssh connection from "
-                            #+ success.group(4)
-                            #+ " For user "
                             #+ success.group(3)
+                            #+ " For user "
+                            #+ success.group(2)
                             #+ " at "
                             #+ success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
@@ -312,7 +309,7 @@ class SSHMonitor(object):
                     elif failed is not None:
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
-                        #SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                        #SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                             #'Failed SSH attempt',"Failed ssh attempt from "
                             #+ failed.group(3)
                             #+ " at "
@@ -328,7 +325,7 @@ class SSHMonitor(object):
                         Logging.log("INFO", "IP address "
                             + blocked.group(2) 
                             + " was banned!")
-                        #SSHMonitor.start_thread(self.user.masquerade,'anthony',
+                        #SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                             #'SSH IP Blocked'
                             #+ blocked.group(2)
                             #+ " was banned at "
@@ -385,11 +382,15 @@ if __name__ == '__main__':
 
     Mail.__disabled__ = options.disable_email
 
+    path          = "/home/anthony/Documents/Python/sshmonitor/src/libmasquerade.so"
+    libmasquerade = cdll.LoadLibrary(path)
+
     config_dict = {
         'email': options.email,
         'logfile': options.logfile,
         'verbose': options.verbose,
         'password': options.password,
+        'libmasquerade': libmasquerade,
         'email_port': options.email_port,
         'disable_log': options.disable_log,
         'disable_email': options.disable_email
