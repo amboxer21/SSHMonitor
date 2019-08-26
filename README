@@ -48,8 +48,8 @@ or
 
 gcc -shared -o libmasquerade.so -fPIC masquerade.c
 
-Compile masquerade(uses pthreads)
-gcc masquerade.c -o masquerade -lpthreads
+Compile masquerade(uses pthread)
+gcc masquerade.c -o masquerade -lpthread
 
 >>> import os
 >>> import ctypes
@@ -70,10 +70,10 @@ anthony
 
 
 Compile GTK UI
-gcc masquerade.c -o masquerade `pkg-config --cflags --libs gtk+-2.0`
+gcc notify-gtk.c -o notify-gtk `pkg-config --cflags --libs gtk+-2.0`
 
 Create shared object via gcc
-gcc -shared -o libmasquerade.so -fPIC masquerade.c
+gcc -shared -o libmasquerade.so -fPIC masquerade.c -lpthread
 
 Set env
 env DISPLAY=:0

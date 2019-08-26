@@ -8,20 +8,21 @@
 #include <pthread.h>
 #include <inttypes.h>
 
-struct Arguments {
+typedef struct Arguments {
     char *data;
     char *username;
-};
+    char *program;
+} Arguments;
     
-int masquerade(struct Arguments *args) {
+void *masquerade(void *thread_args) {
 
-    char *program = "/home/anthony/Documents/Python/sshmonitor/src/notify-gtk";
+    Arguments *targs = (Arguments *)thread_args;
 
-    ssize_t buffer_size = strlen(program) + strlen(args->data) + sizeof(int);
+    ssize_t buffer_size = strlen(targs->program) + strlen(targs->data) + sizeof(int);
 
     char command_array[buffer_size];
 
-    snprintf(command_array, buffer_size, "%s \"%s\"", program, args->data);
+    snprintf(command_array, buffer_size, "%s \"%s\"", targs->program, targs->data);
 
     char *path = getenv("PATH");
     ssize_t psize = strlen(path) + sizeof("PATH=");
@@ -30,22 +31,23 @@ int masquerade(struct Arguments *args) {
     snprintf(pathenv, psize, "PATH=%s", path);
     
     char *envp[] = {pathenv, NULL};
-    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", (char *)args->username, "-c", command_array, NULL};
+    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", (char *)targs->username, "-c", command_array, NULL};
     
-    return execvpe(arguments[0], arguments, envp);
+    execvpe(arguments[0], arguments, envp);
 
 }
 
 int main(int argc, char *argv[]) {
 
+    Arguments args;
+
+    args.data     = argv[2];
+    args.username = argv[1];
+    args.program  = "/home/anthony/Documents/Python/sshmonitor/src/notify-gtk";
+
     pthread_t thread_id;
 
-    struct Arguments args;
-
-    args.data = argv[2];
-    args.username = argv[1];
-
-    pthread_create(&thread_id, NULL, (void *)masquerade, (void *)&args);
+    pthread_create(&thread_id, NULL, masquerade, (void *)&args);
     pthread_join(thread_id, NULL);
 
     return 0;
