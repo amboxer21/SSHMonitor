@@ -15,7 +15,7 @@ function compile_ui() {
 }
 
 function compile_main() {
-    gcc -g masquerade.c -o masquerade -lpthread
+    gcc -g masquerade.c -o masquerade
 }
 
 function copy_ui_to_path() {
@@ -27,7 +27,7 @@ function chown_ui() {
 }
 
 function compile_shared_object() {
-    gcc -g -shared -o libmasquerade.so -fPIC masquerade.c -lpthread
+    gcc -g -shared -o libmasquerade.so -fPIC -lpthread masquerade.c
 }
 
 function main() {
