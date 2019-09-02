@@ -292,7 +292,7 @@ class SSHMonitor(object):
                         Logging.log("INFO", "Successful SSH login from "
                             + success.group(3))
                         if self.notify_with_ui:
-                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'padding','anthony'
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 "New ssh connection from "
                                 + success.group(3)
                                 + " For user "
@@ -312,7 +312,7 @@ class SSHMonitor(object):
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
                         if self.notify_with_ui:
-                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'padding','anthony',
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 'Failed SSH attempt',"Failed ssh attempt from "
                                 + failed.group(3)
                                 + " at "
@@ -329,7 +329,7 @@ class SSHMonitor(object):
                             + blocked.group(2) 
                             + " was banned!")
                         if self.notify_with_ui:
-                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'padding','anthony',
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 'SSH IP Blocked'
                                 + blocked.group(2)
                                 + " was banned at "
