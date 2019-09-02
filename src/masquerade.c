@@ -24,15 +24,8 @@ void masquerade(char *username, char *data) {
     snprintf(pathenv, psize, "PATH=%s", path);
     
     char *envp[] = {pathenv, NULL};
-    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", (char *)username, "-c", command_array, NULL};
+    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", username, "-c", command_array, NULL};
     
     execvpe(arguments[0], arguments, envp);
 
-}
-
-int main(int argc, char **argv) {
-
-    masquerade(argv[1],argv[2]);
-
-    return 0;
 }

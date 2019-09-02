@@ -28,7 +28,7 @@ void masquerade(arguments **targs) {
     snprintf(pathenv, psize, "PATH=%s", path);
     
     char *envp[] = {pathenv, NULL};
-    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", (char *)(*targs)->username, "-c", command_array, NULL};
+    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", (*targs)->username, "-c", command_array, (char *)NULL};
     
     execvpe(arguments[0], arguments, envp);
 

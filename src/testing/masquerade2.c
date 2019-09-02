@@ -9,7 +9,7 @@
 
 void masquerade(char *username, char *data) {
 
-    char *program  = "/usr/local/bin/notify-gtk";
+    char *program  = "/usr/local/bin/notify-gtk2";
 
     size_t buffer_size = strlen(program) + strlen(data) + sizeof(int);
 
@@ -28,12 +28,4 @@ void masquerade(char *username, char *data) {
     
     execvpe(arguments[0], arguments, envp);
 
-}
-
-int main(int argc, char *argv[]) {
-
-
-    masquerade(argv[1],argv[2]);
-
-    return 0;
 }

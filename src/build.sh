@@ -15,7 +15,11 @@ function compile_ui() {
 }
 
 function compile_main() {
-    gcc -g masquerade.c -o masquerade
+    echo -e "\n\nSkipping compilation of main c program.";
+    echo -e "This option is being skipped and commented out due to the program being"
+    echo -e "a library. This means that the program has no main function entry point.";
+    echo -e "Uncomment if you want to compile main, just add a main entry point in masquerade.c.\n\n"
+    #gcc -g masquerade.c -o masquerade
 }
 
 function copy_ui_to_path() {
@@ -35,7 +39,7 @@ function main() {
     copy_ui_to_path;
     chown_ui;
 
-    compile_main;
+    #compile_main;
     compile_shared_object;
 } 
 

@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 import os
+import time
 
-from ctypes import *
+from ctypes import cdll
 
 class TestMasquerade(object):
 
@@ -13,7 +14,7 @@ class TestMasquerade(object):
         self.libmasquerade.masquerade("anthony", "This is a test.")
 
 if __name__ == '__main__':
-    path = "/home/anthony/Documents/Python/sshmonitor/src/libmasquerade.so"
+    path = "/home/anthony/Documents/Python/sshmonitor/src/testing/libmasquerade2.so"
     test_masquerade = TestMasquerade(cdll.LoadLibrary(path))
     test_masquerade.main()
 

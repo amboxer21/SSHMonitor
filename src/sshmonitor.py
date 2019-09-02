@@ -195,13 +195,14 @@ class SSHMonitor(object):
     
     def __init__(self, config_dict={}):
 
-        self.email         = config_dict['email']
-        self.logfile       = config_dict['logfile']
-        self.password      = config_dict['password']
-        self.email_port    = config_dict['email_port']
-        self.disable_log   = config_dict['disable_log']
-        self.disable_email = config_dict['disable_email']
-        self.libmasquerade = config_dict['libmasquerade']
+        self.email          = config_dict['email']
+        self.logfile        = config_dict['logfile']
+        self.password       = config_dict['password']
+        self.email_port     = config_dict['email_port']
+        self.disable_log    = config_dict['disable_log']
+        self.disable_email  = config_dict['disable_email']
+        self.libmasquerade  = config_dict['libmasquerade']
+        self.notify_with_ui = config_dict['notify_with_ui']
 
         self.tail = Tail()
 
@@ -290,13 +291,14 @@ class SSHMonitor(object):
                     if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
                             + success.group(3))
-                        #SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
-                            #"New ssh connection from "
-                            #+ success.group(3)
-                            #+ " For user "
-                            #+ success.group(2)
-                            #+ " at "
-                            #+ success.group(1))
+                        if self.notify_with_ui:
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony','anthony','this is a test')
+                                #"New ssh connection from "
+                                #+ success.group(3)
+                                #+ " For user "
+                                #+ success.group(2)
+                                #+ " at "
+                                #+ success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'New SSH Connection',"New ssh connection from "
@@ -309,11 +311,12 @@ class SSHMonitor(object):
                     elif failed is not None:
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
-                        #SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
-                            #'Failed SSH attempt',"Failed ssh attempt from "
-                            #+ failed.group(3)
-                            #+ " at "
-                            #+ success.group(1))
+                        if self.notify_with_ui:
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
+                                'Failed SSH attempt',"Failed ssh attempt from "
+                                + failed.group(3)
+                                + " at "
+                                + success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"failed", failed.group(2), failed.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'Failed SSH attempt',"Failed ssh attempt from "
@@ -325,12 +328,13 @@ class SSHMonitor(object):
                         Logging.log("INFO", "IP address "
                             + blocked.group(2) 
                             + " was banned!")
-                        #SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
-                            #'SSH IP Blocked'
-                            #+ blocked.group(2)
-                            #+ " was banned at "
-                            #+ blocked.group(1)
-                            #+ " for too many failed attempts.")
+                        if self.notify_with_ui:
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
+                                'SSH IP Blocked'
+                                + blocked.group(2)
+                                + " was banned at "
+                                + blocked.group(1)
+                                + " for too many failed attempts.")
                         SSHMonitor.start_thread(self.log_attempt,"banned",blocked.group(2),blocked.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'SSH IP Blocked'
@@ -361,6 +365,10 @@ if __name__ == '__main__':
         dest='verbose', action="store_true", default=False,
         help='This option prints the args passed to SSHMonitor on the '
             + 'command line.')
+    parser.add_option("-n", "--notify-with-ui",
+        dest='notify_with_ui', action="store_true", default=False,
+        help='Notifies you of any SSH activity through a GTK2 user '
+            + 'interface.')
     parser.add_option("-l", "--log-file",
         dest='logfile', default='/var/log/auth.log',
         help='This is the log file that SSHMonitor tails to '
@@ -393,7 +401,8 @@ if __name__ == '__main__':
         'libmasquerade': libmasquerade,
         'email_port': options.email_port,
         'disable_log': options.disable_log,
-        'disable_email': options.disable_email
+        'disable_email': options.disable_email,
+        'notify_with_ui': options.notify_with_ui
     }
 
     fileOpts = FileOpts()
