@@ -210,6 +210,10 @@ class SSHMonitor(object):
         self.logfile_sanity_check(self.logfile)
         self.display_options()
 
+        if self.notify_with_ui and self.libmasquerade is None:
+            Logging.log('WARN', '/usr/lib/masquerade.so not found! '
+                + 'UI notifications will not work.') 
+
     def display_options(self):
         verbose = {}
         if config_dict['verbose']:
@@ -286,12 +290,11 @@ class SSHMonitor(object):
                         + " for.*from (.*) port.*$", line, re.I | re.M)
                     blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
                         + " (.*) for.*$", line, re.I | re.M)
-    
 
                     if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
                             + success.group(3))
-                        if self.notify_with_ui:
+                        if self.notify_with_ui and self.libmasquerade is not None:
                             SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 "New ssh connection from "
                                 + success.group(3)
@@ -311,7 +314,7 @@ class SSHMonitor(object):
                     elif failed is not None:
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
-                        if self.notify_with_ui:
+                        if self.notify_with_ui and self.libmasquerade is not None:
                             SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 'Failed SSH attempt',"Failed ssh attempt from "
                                 + failed.group(3)
@@ -328,7 +331,7 @@ class SSHMonitor(object):
                         Logging.log("INFO", "IP address "
                             + blocked.group(2) 
                             + " was banned!")
-                        if self.notify_with_ui:
+                        if self.notify_with_ui and self.libmasquerade is not None:
                             SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 'SSH IP Blocked'
                                 + blocked.group(2)
@@ -390,8 +393,14 @@ if __name__ == '__main__':
 
     Mail.__disabled__ = options.disable_email
 
-    path          = "/home/anthony/Documents/Python/sshmonitor/src/libmasquerade.so"
-    libmasquerade = cdll.LoadLibrary(path)
+    libmasquerade = None
+
+    try:
+        path          = "/usr/lib/libmasquerade.so"
+        libmasquerade = cdll.LoadLibrary(path)
+    except OSError:
+        libmasquerade = None
+        pass
 
     config_dict = {
         'email': options.email,
