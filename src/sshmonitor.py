@@ -242,10 +242,10 @@ class SSHMonitor(object):
                     sys.exit(0)
 
     @staticmethod
-    def start_thread(proc,daemonize=True,*args):
+    def start_thread(proc,*args):
         try:
             t = threading.Thread(target=proc,args=args)
-            t.daemon = daemonize
+            t.daemon = True
             t.start()
         except Exception as eStartThread:
             Logging.log("ERROR",
@@ -292,13 +292,13 @@ class SSHMonitor(object):
                         Logging.log("INFO", "Successful SSH login from "
                             + success.group(3))
                         if self.notify_with_ui:
-                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony','anthony','this is a test')
-                                #"New ssh connection from "
-                                #+ success.group(3)
-                                #+ " For user "
-                                #+ success.group(2)
-                                #+ " at "
-                                #+ success.group(1))
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'padding','anthony'
+                                "New ssh connection from "
+                                + success.group(3)
+                                + " For user "
+                                + success.group(2)
+                                + " at "
+                                + success.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"success", success.group(3), success.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'New SSH Connection',"New ssh connection from "
@@ -312,7 +312,7 @@ class SSHMonitor(object):
                         Logging.log("INFO", "Failed SSH login from "
                             + failed.group(2))
                         if self.notify_with_ui:
-                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'padding','anthony',
                                 'Failed SSH attempt',"Failed ssh attempt from "
                                 + failed.group(3)
                                 + " at "
@@ -329,13 +329,13 @@ class SSHMonitor(object):
                             + blocked.group(2) 
                             + " was banned!")
                         if self.notify_with_ui:
-                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
+                            SSHMonitor.start_thread(self.libmasquerade.masquerade,'padding','anthony',
                                 'SSH IP Blocked'
                                 + blocked.group(2)
                                 + " was banned at "
                                 + blocked.group(1)
                                 + " for too many failed attempts.")
-                        SSHMonitor.start_thread(self.log_attempt,"banned",blocked.group(2),blocked.group(1))
+                        SSHMonitor.start_thread(self.log_attempt, "banned", blocked.group(2), blocked.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'SSH IP Blocked'
                             + blocked.group(2)
