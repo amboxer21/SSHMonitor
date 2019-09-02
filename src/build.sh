@@ -30,6 +30,10 @@ function compile_shared_object() {
     gcc -g -shared -o libmasquerade.so -fPIC -lpthread masquerade.c
 }
 
+function copy_shared_object_to_path() {
+  sudo cp libmasquerade.so /usr/lib/;
+}
+
 function main() {
     compile_ui;
     copy_ui_to_path;
@@ -37,6 +41,7 @@ function main() {
 
     #compile_main;
     compile_shared_object;
+    copy_shared_object_to_path;
 } 
 
 main;
