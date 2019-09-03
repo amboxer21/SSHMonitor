@@ -5,18 +5,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <inttypes.h>
 
-char *setpath() {
+char *setpath(void) {
 
     char *path = getenv("PATH");
 
-    size_t psize  = strlen(path) + strlen("PATH=") + sizeof(int);
-    char *pathenv = (char *)malloc(sizeof(psize));
+    size_t path_size  = strlen(path) + strlen("PATH=") + sizeof(int);
+    char *pathenv = (char *)malloc(sizeof(path_size));
 
     char *ppath = pathenv;
 
-    snprintf(pathenv, psize, "PATH=%s", path);
+    snprintf(pathenv, path_size, "PATH=%s", path);
 
     free(pathenv);
 
@@ -26,15 +25,21 @@ char *setpath() {
 
 void masquerade(char *username, char *data) {
 
-    char *program  = "/usr/local/bin/notify-gtk";
+    if(username == NULL) {
+        username = getlogin();
+    }
+
+    char *program = "/usr/local/bin/notify-gtk";
 
     size_t buffer_size = strlen(program) + strlen(data) + sizeof(int);
     char *command = (char *)malloc(sizeof(buffer_size));
-
     snprintf(command, buffer_size, "%s \"%s\"", program, data);
 
     char *envp[] = {setpath(), NULL};
-    char *arguments[] = {"env", "DISPLAY=:0.0", "sudo", "-i", "su", username, "-c", command, (char *)NULL};
+
+    char *arguments[] = {
+        "env", "DISPLAY=:0.0", "sudo", "-i", "su", username, "-c", command, (char *)NULL,
+    };
     
     if(fork() == 0) {
         execvpe(arguments[0], arguments, envp);
