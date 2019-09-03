@@ -24,7 +24,7 @@ int write_to_shared_memory(char *data) {
     int shmid = shmget(key,1024,0666|IPC_CREAT);
 
     // shmat to attach to shared memory
-    char *shared_data = (char*) shmat(shmid,(void*)0,0);
+    char *shared_data = (char*)shmat(shmid,(void*)0,0);
     const void *message = data;
 
     memcpy(shared_data, message, (sizeof(message) + sizeof(size_t)));
