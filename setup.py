@@ -12,18 +12,32 @@ from setuptools import setup, find_packages
 from distutils.errors import DistutilsError, DistutilsExecError
 
 class Check(object):
+
     def __init__(self):
         self.sys_dependencies = {
-            'rpm': ('python-devel','sqlite3-dbf','syslog-ng','sendmail-cf',
-                'sendmail-devel','procmail','opencv-core','opencv-python'),
-            'eix': ('mail-mta/sendmail','app-admin/syslog-ng','dev-lang/python',
-                'dev-python/sqlite3dbm','mail-filter/procmail','media-libs/opencv'),
-            'apt': ('libopencv-dev','python-opencv','python-dev','procmail','sqlite3',
-                'sendmail-bin','sendmail-cf','sensible-mda','syslog-ng','sendmail-base')}
+            'rpm': (
+                'python-devel','syslog-ng','sendmail-cf','sendmail-devel','procmail'
+            ),
+            'eix': (
+                'x11-libs/gtk+:2','x11-libs/gtk+:3','mail-filter/procmail',
+                'mail-mta/sendmail','app-admin/syslog-ng','dev-lang/python',
+            ),
+            'apt': (
+                'python-dev','procmail','sendmail-bin',
+                'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
+            )
+        }
         self.package_manager  = {
-            'rpm': ('centos','fedora','scientific','opensuse'),
-            'apt': ('debian','ubuntu','linuxmint'),
-            'eix': ('gentoo',)}
+            'rpm': (
+                'centos','fedora','scientific','opensuse'
+            ),
+            'apt': (
+                'debian','ubuntu','linuxmint'
+            ),
+            'eix': (
+                'gentoo',
+            )
+        }
 
     def system_query_command(self):
         if version.system_package_manager() == 'rpm':
@@ -35,28 +49,35 @@ class Check(object):
         return system_query_command
 
     def grep_system_packages(self,package_name):
-        comm = subprocess.Popen([self.system_query_command() + " " + str(package_name)],
-            shell=True, stdout=subprocess.PIPE)
+        comm = subprocess.Popen([self.system_query_command()
+            + " "
+            + str(package_name)], shell=True, stdout=subprocess.PIPE)
         if comm is not None:
-            logger.log("INFO", "Package " + str(comm.stdout.read()).strip() + " was found.")
+            logger.log("INFO", "Package "
+                + str(comm.stdout.read()).strip()
+                + " was found.")
         else:
-            logger.log("ERROR", "Package " + str(comm.stdout.read()).strip() + " was not found.")
+            logger.log("ERROR", "Package "
+                + str(comm.stdout.read()).strip()
+                + " was not found.")
 
     def main(self):
         try:
             for item in self.sys_dependencies[version.system_package_manager()]:
                 self.grep_system_packages(item)
         except DistutilsExecError as distutilsExecError:
-            logger.log("ERROR", "Exception DistutilsExecError: " + str(distutilsExecError))
+            logger.log("ERROR", "Exception DistutilsExecError: "
+                + str(distutilsExecError))
 
 class PrepareBuild(object):
+
     def __init__(self):
         pass
 
     def cron_tab(self):
-        #Count need to be 1 in order to write to the crontab
-        #Basically, checking for grep being None or not None will
-        # not work in this case and we need to check for 2 occurances.
+        #Count need to be 1 in order to write to the crontab.
+        #Basically, checking for grep being None or not None will 
+        #not work in this case and we need to check for 2 occurances.
         count=0
         command="/bin/bash /home/root/.ssh/is_sshm_running.sh"
         cron = CronTab(user='root')
@@ -81,16 +102,16 @@ if __name__ == '__main__':
     if argument is None:
         logger.log("ERROR","Option is not supported.")
         sys.exit(0)
-    '''elif argument.group() == 'check':
+    elif argument.group() == 'check':
         logger.log("INFO","Grepping System Packages")
         Check().main()
-        sys.exit(0)'''
+        sys.exit(0)
 
     logger.log('INFO', 'Entering setup in setup.py')
 
     setup(name='sshmonitor',
     version='1.0.1',
-    url='https://github.com/amboxer21/SSHMonitorPy',
+    url='https://github.com/amboxer21/SSHMonitor',
     license='GPL-3.0',
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
@@ -112,6 +133,7 @@ if __name__ == '__main__':
         'License :: OSI Approved :: GNU General Public License (GPL)',
     ],
     data_files=[
+        ('/usr/lib/', ['src/lib/shared/libmasquerade.so']),
         ('/usr/local/bin/', ['src/sshmonitor.py']),
         ('/home/root/.ssh/' ,['src/system/home/user/.ssh/is_sshm_running.sh'])],
     zip_safe=True,
