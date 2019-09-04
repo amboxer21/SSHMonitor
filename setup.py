@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-import subprocess,re,sys,os,time
+import re
+import os
+import sys
+import time
+import subprocess
 
 import src.lib.gdm.gdm as gdm
 import src.lib.logging.logger as logger
@@ -27,7 +31,7 @@ class Check(object):
                 'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
             )
         }
-        self.package_manager  = {
+        self.package_manager = {
             'rpm': (
                 'centos','fedora','scientific','opensuse'
             ),
@@ -40,18 +44,17 @@ class Check(object):
         }
 
     def system_query_command(self):
-        if version.system_package_manager() == 'rpm':
+        if 'rpm' in  version.system_package_manager():
             system_query_command = 'rpm -qa'
-        elif version.system_package_manager() == 'apt':
+        elif 'apt' in version.system_package_manager():
             system_query_command = 'dpkg --list'
-        elif version.system_package_manager() == 'eix':
+        elif 'eix' in version.system_package_manager():
             system_query_command = 'eix -e --only-names'
         return system_query_command
 
     def grep_system_packages(self,package_name):
         comm = subprocess.Popen([self.system_query_command()
-            + " "
-            + str(package_name)], shell=True, stdout=subprocess.PIPE)
+            + " " + str(package_name)], shell=True, stdout=subprocess.PIPE)
         if comm is not None:
             logger.log("INFO", "Package "
                 + str(comm.stdout.read()).strip()
@@ -84,8 +87,8 @@ class PrepareBuild(object):
         job = cron.new(command=command)
         job.minute.every(1)
         install = re.search('install', str(sys.argv[1]), re.M | re.I)
-        for item in cron:
-            grep = re.search(r'\/is_sshm_running.sh', str(item))
+        for job in cron:
+            grep = re.search(r'\/is_sshm_running.sh', str(job))
             if grep is not None:
                 count+=1
         if count < 2 and install is not None:
@@ -102,7 +105,7 @@ if __name__ == '__main__':
     if argument is None:
         logger.log("ERROR","Option is not supported.")
         sys.exit(0)
-    elif argument.group() == 'check':
+    elif 'check' in argument.group():
         logger.log("INFO","Grepping System Packages")
         Check().main()
         sys.exit(0)
