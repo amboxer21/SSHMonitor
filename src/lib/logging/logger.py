@@ -11,6 +11,6 @@ def log(level,message):
     root = logging.getLogger()
     root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
     root.addHandler(handler)
-    logging.exception("(" + str(level) + ") " + "ImageCapture - " + message)
-    print("  => (" + str(level) + ") " + "ImageCapture - " + str(message))
+    logging.exception("(" + str(level) + ") " + "SSHMonitor - " + message)
+    print("  => (" + str(level) + ") " + "SSHMonitor - " + str(message))
     return
