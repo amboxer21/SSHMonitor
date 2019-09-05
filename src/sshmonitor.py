@@ -368,10 +368,10 @@ if __name__ == '__main__':
         dest='verbose', action="store_true", default=False,
         help='This option prints the args passed to SSHMonitor on the '
             + 'command line.')
-    parser.add_option("-n", "--notify-with-ui",
-        dest='notify_with_ui', action="store_true", default=False,
-        help='Notifies you of any SSH activity through a GTK2 user '
-            + 'interface.')
+    #parser.add_option("-n", "--notify-with-ui",
+        #dest='notify_with_ui', action="store_true", default=False,
+        #help='Notifies you of any SSH activity through a GTK2 user '
+            #+ 'interface.')
     parser.add_option("-l", "--log-file",
         dest='logfile', default='/var/log/auth.log',
         help='This is the log file that SSHMonitor tails to '
