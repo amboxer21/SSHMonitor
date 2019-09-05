@@ -31,6 +31,7 @@ function compile_shared_object() {
 }
 
 function copy_shared_object_to_path() {
+  sudo cp libmasquerade.so lib/shared/;
   sudo cp libmasquerade.so /usr/lib/;
 }
 
