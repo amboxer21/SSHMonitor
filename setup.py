@@ -27,7 +27,7 @@ class Check(object):
                 'mail-mta/sendmail','app-admin/syslog-ng','dev-lang/python',
             ),
             'apt': (
-                'python-dev','procmail','sendmail-bin',
+                'libgtk2.0-dev','python-dev','procmail','sendmail-bin',
                 'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
             )
         }
