@@ -10,7 +10,7 @@ char *setpath(void) {
 
     char *path = getenv("PATH");
 
-    size_t path_size  = strlen(path) + strlen("PATH=") + sizeof(int);
+    size_t path_size  = strlen(path) + strlen("PATH=") + sizeof(char *);
     char *pathenv = (char *)malloc(sizeof(path_size));
 
     char *ppath = pathenv;
@@ -31,7 +31,7 @@ void masquerade(char *username, char *data) {
 
     char *program = "/usr/local/bin/notify-gtk";
 
-    size_t buffer_size = strlen(program) + strlen(data) + sizeof(int);
+    size_t buffer_size = strlen(program) + strlen(data) + sizeof(char *);
     char *command = (char *)malloc(sizeof(buffer_size));
     snprintf(command, buffer_size, "%s \"%s\"", program, data);
 
