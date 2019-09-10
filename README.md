@@ -1,6 +1,6 @@
 # SSHMonitor
 **Notice:**
-> I USUALLY WORK OFF OF MASTER WITHOUT CREATING NEW BRANCHES(A BAD PRACTICE I KNOW), SO IF YOU CLONE AND DO NOT FORK THEN ANY BUGS YOU ENCOUNTER... YOU ARE ON YOUR OWN.
+> I USUALLY WORK OFF OF MASTER WITHOUT CREATING NEW BRANCHES(**A BAD PRACTICE I KNOW**), SO IF YOU CLONE AND DO NOT FORK THEN ANY BUGS YOU ENCOUNTER... YOU ARE ON YOUR OWN.
 
 **About:**
 >SSHMonitor monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not. PLEASE FORK INSTEAD OF CLONE THIS REPO. I would greatly appreciate it! Also, you are going to need to setup an outgoing E-mail server in order for the program to work.
