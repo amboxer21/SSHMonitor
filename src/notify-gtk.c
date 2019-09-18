@@ -24,8 +24,6 @@ int main(int argc, char *argv[]) {
     GtkWidget *button;
     GtkWidget *scrolledwindow;
 
-    gchar *text;
-
     GtkTextBuffer *buffer;
 
     GtkTextIter start, iter, end;

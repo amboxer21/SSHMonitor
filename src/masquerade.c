@@ -38,7 +38,7 @@ void masquerade(char *username, char *data) {
     char *envp[] = {setpath(), NULL};
 
     char *arguments[] = {
-        "env", "DISPLAY=:0.0", "sudo", "-i", "su", username, "-c", command, (char *)NULL,
+        "/usr/bin/env", "DISPLAY=:0.0", "/usr/bin/sudo", "-i", "su", username, "-c", command, (char *)NULL,
     };
     
     if(fork() == 0) {

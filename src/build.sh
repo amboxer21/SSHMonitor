@@ -11,11 +11,11 @@ if [[ ! $EUID == 0 ]]; then
 fi
 
 function compile_ui() {
-    gcc -g notify-gtk.c -o notify-gtk `pkg-config --cflags --libs gtk+-2.0`
+    gcc -g -Wall notify-gtk.c -o notify-gtk `pkg-config --cflags --libs gtk+-2.0`
 }
 
 function compile_main() {
-    gcc -g masquerade.c -o masquerade
+    gcc -g -Wall masquerade.c -o masquerade
 }
 
 function copy_ui_to_path() {
@@ -27,7 +27,7 @@ function chown_ui() {
 }
 
 function compile_shared_object() {
-    gcc -g -shared -o libmasquerade.so -fPIC -lpthread masquerade.c
+    gcc -g -Wall -shared -o libmasquerade.so -fPIC masquerade.c
 }
 
 function copy_shared_object_to_path() {
