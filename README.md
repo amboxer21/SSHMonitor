@@ -1,6 +1,8 @@
 # SSHMonitor
 **Notice:**
-> I USUALLY WORK OFF OF MASTER WITHOUT CREATING NEW BRANCHES(**A BAD PRACTICE I KNOW**), SO IF YOU CLONE AND DO NOT FORK THEN ANY BUGS YOU ENCOUNTER... YOU ARE ON YOUR OWN.
+> I USUALLY WORK OFF OF MASTER WITHOUT CREATING NEW BRANCHES(**A BAD PRACTICE I KNOW**), SO IF YOU CLONE AND DO NOT FORK THEN ANY BUGS YOU ENCOUNTER... YOU ARE ON YOUR OWN. 
+
+Recently I receieved E-mail notifications around 5am from someone using/testing this software. He didn't check/know that this app sends the notifications to **MY** E-mail(sshmonitorapp@gmail.com) which is set in the crontab. Meanwhile he is probably ranting about how much of an idiot I am and how my code base doesn't work. 
 
 **About:**
 >SSHMonitor monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not. PLEASE FORK INSTEAD OF CLONE THIS REPO. I would greatly appreciate it! Also, you are going to need to setup an outgoing E-mail server in order for the program to work.
