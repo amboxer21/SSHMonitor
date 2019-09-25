@@ -22,7 +22,8 @@ class Check(object):
     def __init__(self):
         self.sys_dependencies = {
             'rpm': (
-                'python-devel','syslog-ng','sendmail-cf','sendmail-devel','procmail'
+                'gtk+-devel','gtk2-devel','python-devel',
+                'syslog-ng','sendmail-cf','sendmail-devel','procmail'
             ),
             'eix': (
                 'x11-libs/gtk+:2','x11-libs/gtk+:3','mail-filter/procmail',
@@ -34,29 +35,23 @@ class Check(object):
             )
         }
         self.package_manager = {
-            'rpm': (
-                'centos','fedora','scientific','opensuse'
-            ),
-            'apt': (
-                'debian','ubuntu','linuxmint'
-            ),
-            'eix': (
-                'gentoo',
-            )
+            'rpm': ('centos','fedora','scientific','opensuse'),
+            'apt': ('debian','ubuntu','linuxmint'),
+            'eix': ('gentoo',)
         }
 
     def system_query_command(self):
         if 'rpm' in  version.system_package_manager():
             system_query_command = 'rpm -qa'
         elif 'apt' in version.system_package_manager():
-            system_query_command = 'dpkg --list'
+            system_query_command = 'dpkg --get-selections'
         elif 'eix' in version.system_package_manager():
             system_query_command = 'eix -e --only-names'
         return system_query_command
 
     def grep_system_packages(self,package_name):
         comm = subprocess.Popen([self.system_query_command()
-            + " " + str(package_name)], shell=True, stdout=subprocess.PIPE)
+            + " " + str(package_name)], shell=True,stdout=subprocess.PIPE)
         if comm is not None:
             Logger.log("INFO", "Package "
                 + str(comm.stdout.read()).strip()
@@ -76,8 +71,15 @@ class Check(object):
 
 class PrepareBuild(object):
 
-    def __init__(self):
-        pass
+    def __init__(self,setup_options={},config_dict={}):
+
+        self.check    = setup_options['check']
+        self.build    = setup_options['build']
+        self.sdist    = setup_options['sdist']
+        self.install  = setup_options['install']
+
+        self.email    = config_dict['email']
+        self.password = config_dict['password']
 
     def cron_tab(self):
         #Count need to be 1 in order to write to the crontab.
@@ -88,12 +90,11 @@ class PrepareBuild(object):
         cron = CronTab(user='root')
         job = cron.new(command=command)
         job.minute.every(1)
-        install = re.search('install', str(sys.argv[1]), re.M | re.I)
         for job in cron:
             grep = re.search(r'\/is_sshm_running.sh', str(job))
             if grep is not None:
                 count+=1
-        if count < 2 and install is not None:
+        if count < 2 and self.install:
             Logger.log("INFO", "Installing crontab.")
             cron.write()
             print("Please nesure that the crontab was actually installed!")
@@ -146,21 +147,23 @@ if __name__ == '__main__':
             sys.exit(0)
 
     for options in setup_options:
-        if 'check' in options and setup_options[options]:
+        if setup_options['check']:
             Logger.log("INFO","Grepping System Packages")
             Check().main()
             sys.exit(0)
-        elif 'build' in options and setup_options[options]: 
+        elif setup_options['build']: 
             Logger.log('INFO', 'Building setup!')
-        elif 'sdist' in options and setup_options[options]: 
+            break
+        elif setup_options['sdist']: 
             Logger.log('INFO', 'Running sdist!')
-        elif 'install' in options and setup_options[options]: 
+            break
+        elif setup_options['install']: 
             Logger.log('INFO', 'Installing sshmonitorapp.')
-        else:
-            Logger.log('ERROR', 'No base option provided.')
-            sys.exit(0)
+            break
+        Logger.log('ERROR', 'No base option provided.')
+        sys.exit(0)
 
-    prepareBuild = PrepareBuild()
+    prepareBuild = PrepareBuild(setup_options,config_dict)
 
     Logger.log('INFO','Entering setup in setup.py')
 
