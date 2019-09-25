@@ -7,10 +7,12 @@ import time
 import subprocess
 
 import src.lib.gdm.gdm as gdm
-import src.lib.logging.logger as logger
 import src.lib.version.version as version
 
+from src.lib.logging.logger import Logging as Logger
+
 from distutils.cmd import Command
+from optparse import OptionParser
 from subprocess import Popen, call, PIPE
 from setuptools import setup, find_packages
 from distutils.errors import DistutilsError, DistutilsExecError
@@ -56,11 +58,11 @@ class Check(object):
         comm = subprocess.Popen([self.system_query_command()
             + " " + str(package_name)], shell=True, stdout=subprocess.PIPE)
         if comm is not None:
-            logger.log("INFO", "Package "
+            Logger.log("INFO", "Package "
                 + str(comm.stdout.read()).strip()
                 + " was found.")
         else:
-            logger.log("ERROR", "Package "
+            Logger.log("ERROR", "Package "
                 + str(comm.stdout.read()).strip()
                 + " was not found.")
 
@@ -69,7 +71,7 @@ class Check(object):
             for item in self.sys_dependencies[version.system_package_manager()]:
                 self.grep_system_packages(item)
         except DistutilsExecError as distutilsExecError:
-            logger.log("ERROR", "Exception DistutilsExecError: "
+            Logger.log("ERROR", "Exception DistutilsExecError: "
                 + str(distutilsExecError))
 
 class PrepareBuild(object):
@@ -92,25 +94,75 @@ class PrepareBuild(object):
             if grep is not None:
                 count+=1
         if count < 2 and install is not None:
-            logger.log("INFO", "Installing crontab.")
+            Logger.log("INFO", "Installing crontab.")
             cron.write()
             print("Please nesure that the crontab was actually installed!")
             print("To do so please run(without quotes) => 'sudo crontab -l -u root'")
 
 if __name__ == '__main__':
 
+    parser = OptionParser()
+    parser.add_option(
+        '--check', dest='check', action="store_true", default=False
+    )
+    parser.add_option(
+        '--build', dest='build', action="store_true", default=False
+    )
+    parser.add_option(
+        '--sdist', dest='sdist', action="store_true", default=False
+    )
+    parser.add_option(
+        '--install', dest='install', action="store_true", default=False
+    )
+    parser.add_option('-e', '--email',
+        dest='email', default='sshmonitorapp@gmail.com',
+        help='This argument is required unless you pass the '
+            + 'pass the --disable-email flag on the command line. '
+            + 'Your E-mail address is used to notify you that'
+            + 'there is activity related to ssh attempts.')
+    parser.add_option('-p', '--password',
+        dest='password', default='hkeyscwhgxjzafvj',
+        help='This argument is required unless you pass the '
+            + 'pass the --disable-email flag on the command line. '
+            + 'Your E-mail password is used to send an E-mail of the ip '
+            + 'of the user sshing into your box, successful or not.')
+    (options, args) = parser.parse_args()
+
+    config_dict = {
+        'email': options.email,
+        'password': options.password
+    }
+
+    setup_options = {
+        'check': options.check,
+        'build': options.build,
+        'sdist': options.sdist,
+        'install': options.install
+    }
+
+    if all(not setup_options[options] for options in setup_options):
+        if options.password is None or options.email is None:
+            Logger.log("ERROR","You must provide BOTH an E-mail AND password.")
+            sys.exit(0)
+
+    for options in setup_options:
+        if 'check' in options and setup_options[options]:
+            Logger.log("INFO","Grepping System Packages")
+            Check().main()
+            sys.exit(0)
+        elif 'build' in options and setup_options[options]: 
+            Logger.log('INFO', 'Building setup!')
+        elif 'sdist' in options and setup_options[options]: 
+            Logger.log('INFO', 'Running sdist!')
+        elif 'install' in options and setup_options[options]: 
+            Logger.log('INFO', 'Installing sshmonitorapp.')
+        else:
+            Logger.log('ERROR', 'No base option provided.')
+            sys.exit(0)
+
     prepareBuild = PrepareBuild()
-    argument = re.match(r'(install|check|build|sdist)\b', str(sys.argv[1]))
 
-    if argument is None:
-        logger.log("ERROR","Option is not supported.")
-        sys.exit(0)
-    elif 'check' in argument.group():
-        logger.log("INFO","Grepping System Packages")
-        Check().main()
-        sys.exit(0)
-
-    logger.log('INFO', 'Entering setup in setup.py')
+    Logger.log('INFO','Entering setup in setup.py')
 
     setup(name='sshmonitor',
     version='1.0.1',
