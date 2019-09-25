@@ -51,14 +51,15 @@ class Check(object):
 
     def grep_system_packages(self,package_name):
         comm = subprocess.Popen([self.system_query_command()
-            + " " + str(package_name)], shell=True,stdout=subprocess.PIPE)
-        if comm is not None:
+            + " " + str(package_name)], shell=True,
+            stdout=subprocess.PIPE).stdout.read().strip()
+        if len(comm) > 0:
             Logger.log("INFO", "Package "
-                + str(comm.stdout.read()).strip()
+                + str(comm)
                 + " was found.")
         else:
             Logger.log("ERROR", "Package "
-                + str(comm.stdout.read()).strip()
+                + str(package_name)
                 + " was not found.")
 
     def main(self):
@@ -146,8 +147,12 @@ if __name__ == '__main__':
             Logger.log("ERROR","You must provide BOTH an E-mail AND password.")
             sys.exit(0)
 
+    count = 0
     for options in setup_options:
-        if setup_options['check']:
+        if sum([ count++ setup_options[opts] for opts in setup_options]) == 2:
+            Logger.log('ERROR','Only one base options is permitted at a time.')
+            sys.exit(0)
+        elif setup_options['check']:
             Logger.log("INFO","Grepping System Packages")
             Check().main()
             sys.exit(0)

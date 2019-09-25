@@ -10,7 +10,7 @@ import logging.handlers
 class Logging(object):
 
     @staticmethod
-    def log(level,message,verbose=False):
+    def log(level,message,verbose=True):
         comm = re.search("(WARN|INFO|ERROR)", str(level), re.M)
         try:
             handler = logging.handlers.WatchedFileHandler(
