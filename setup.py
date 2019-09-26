@@ -7,9 +7,9 @@ import time
 import subprocess
 
 import src.lib.gdm.gdm as gdm
-import src.lib.version.version as version
 
 from src.lib.logging.logger import Logging as Logger
+from src.lib.version.version import Version as Version
 
 from distutils.cmd import Command
 from optparse import OptionParser
@@ -20,6 +20,7 @@ from distutils.errors import DistutilsError, DistutilsExecError
 class Check(object):
 
     def __init__(self):
+
         self.sys_dependencies = {
             'rpm': (
                 'gtk+-devel','gtk2-devel','python-devel',
@@ -34,6 +35,7 @@ class Check(object):
                 'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
             )
         }
+
         self.package_manager = {
             'rpm': ('centos','fedora','scientific','opensuse'),
             'apt': ('debian','ubuntu','linuxmint'),
@@ -41,11 +43,11 @@ class Check(object):
         }
 
     def system_query_command(self):
-        if 'rpm' in  version.system_package_manager():
+        if 'rpm' in  Version.system_package_manager():
             system_query_command = 'rpm -qa'
-        elif 'apt' in version.system_package_manager():
+        elif 'apt' in Version.system_package_manager():
             system_query_command = 'dpkg --get-selections'
-        elif 'eix' in version.system_package_manager():
+        elif 'eix' in Version.system_package_manager():
             system_query_command = 'eix -e --only-names'
         return system_query_command
 
@@ -65,7 +67,7 @@ class Check(object):
 
     def main(self):
         try:
-            for item in self.sys_dependencies[version.system_package_manager()]:
+            for item in self.sys_dependencies[Version.system_package_manager()]:
                 self.grep_system_packages(item)
         except DistutilsExecError as distutilsExecError:
             Logger.log("ERROR", "Exception DistutilsExecError: "
@@ -166,8 +168,6 @@ if __name__ == '__main__':
         elif setup_options['install']: 
             Logger.log('INFO', 'Installing sshmonitorapp.')
             break
-        Logger.log('ERROR', 'No base option provided.')
-        sys.exit(0)
 
     prepareBuild = PrepareBuild(setup_options,config_dict)
 
