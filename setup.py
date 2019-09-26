@@ -13,8 +13,8 @@ from src.lib.logging.logger import Logging as Logger
 
 from distutils.cmd import Command
 from optparse import OptionParser
-from subprocess import Popen, call, PIPE
 from setuptools import setup, find_packages
+from subprocess import Popen, call, PIPE, STDOUT
 from distutils.errors import DistutilsError, DistutilsExecError
 
 class Check(object):
@@ -52,10 +52,11 @@ class Check(object):
     def grep_system_packages(self,package_name):
         comm = subprocess.Popen([self.system_query_command()
             + " " + str(package_name)], shell=True,
-            stdout=subprocess.PIPE).stdout.read().strip()
-        if len(comm) > 0:
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE).stdout.read()
+        if not len(comm.strip()) == 0:
             Logger.log("INFO", "Package "
-                + str(comm)
+                + str(package_name)
                 + " was found.")
         else:
             Logger.log("ERROR", "Package "
