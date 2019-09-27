@@ -198,6 +198,7 @@ if __name__ == '__main__':
     ],
     data_files=[
         ('/usr/lib/', ['src/lib/shared/libmasquerade.so']),
+        ('/usr/local/bin/', ['src/notify-gtk']),
         ('/usr/local/bin/', ['src/sshmonitor.py']),
         ('/home/root/.ssh/' ,['src/system/home/user/.ssh/is_sshm_running.sh'])],
     zip_safe=True,
