@@ -93,13 +93,14 @@ class PrepareBuild(object):
         count=0
         cmd="/bin/bash /home/root/.ssh/is_sshm_running.sh"
         cron = CronTab(user='root')
-        job  = cron.new(command=cmd,user='root')
+        job  = cron.new(command=cmd)
         job.minute.every(1)
         for job in cron:
             grep = re.search(r'\/is_sshm_running.sh', str(job))
             if grep is not None:
                 count+=1
-        if count < 2 and self.install:
+        #if count < 2 and self.install:
+        if count < 2:
             Logger.log("INFO", "Installing crontab.")
             cron.write()
             Logger.log("WARN","Please nesure that the crontab was actually installed!")
@@ -169,6 +170,11 @@ if __name__ == '__main__':
         elif _setup_options['install']: 
             Logger.log('INFO', 'Installing sshmonitorapp.')
             break
+
+        # Ensure setup.py is being run with python3
+        if not re.search('^3\.\d+\.\d+', str(Version.python()), re.M | re.I):
+            print("Please run setup with python 3 or higher!")
+            sys.exit(0)
 
     path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
 
