@@ -91,9 +91,9 @@ class PrepareBuild(object):
         #Basically, checking for grep being None or not None will 
         #not work in this case and we need to check for 2 occurances.
         count=0
-        command="/bin/bash /home/root/.ssh/is_sshm_running.sh"
+        cmd="/bin/bash /home/root/.ssh/is_sshm_running.sh"
         cron = CronTab(user='root')
-        job = cron.new(command=command)
+        job  = cron.new(command=cmd,user='root')
         job.minute.every(1)
         for job in cron:
             grep = re.search(r'\/is_sshm_running.sh', str(job))

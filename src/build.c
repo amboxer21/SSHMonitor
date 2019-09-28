@@ -44,7 +44,7 @@ void build(void) {
     
     if(fork() == 0) {
         printf("Compiling masquerade shared object.\n");
-        printf("Copying libmasquerade.so to the /usr/lib/ directory.\n");
+        printf("Copying libmasquerade.so -> src/lib/shared/\n");
         execvpe(arguments[0], arguments, envp);
     }
 
