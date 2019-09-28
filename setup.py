@@ -170,7 +170,7 @@ if __name__ == '__main__':
             Logger.log('INFO', 'Installing sshmonitorapp.')
             break
 
-    path = str(os.getcwd()) + '/src/libbuild.so'
+    path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
 
     prepareBuild = PrepareBuild(path,setup_options=_setup_options,config_dict=_config_dict)
 
