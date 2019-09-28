@@ -6,21 +6,24 @@ import sys
 import time
 import subprocess
 
-import src.lib.gdm.gdm as gdm
-import src.lib.logging.logger as logger
-import src.lib.version.version as version
+from src.lib.logging.logger import Logging as Logger
+from src.lib.version.version import Version as Version
 
+from ctypes import cdll
 from distutils.cmd import Command
-from subprocess import Popen, call, PIPE
+from optparse import OptionParser
 from setuptools import setup, find_packages
+from subprocess import Popen, call, PIPE, STDOUT
 from distutils.errors import DistutilsError, DistutilsExecError
 
 class Check(object):
 
     def __init__(self):
+
         self.sys_dependencies = {
             'rpm': (
-                'python-devel','syslog-ng','sendmail-cf','sendmail-devel','procmail'
+                'gtk+-devel','gtk2-devel','python-devel',
+                'syslog-ng','sendmail-cf','sendmail-devel','procmail'
             ),
             'eix': (
                 'x11-libs/gtk+:2','x11-libs/gtk+:3','mail-filter/procmail',
@@ -31,51 +34,57 @@ class Check(object):
                 'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
             )
         }
+
         self.package_manager = {
-            'rpm': (
-                'centos','fedora','scientific','opensuse'
-            ),
-            'apt': (
-                'debian','ubuntu','linuxmint'
-            ),
-            'eix': (
-                'gentoo',
-            )
+            'rpm': ('centos','fedora','scientific','opensuse'),
+            'apt': ('debian','ubuntu','linuxmint'),
+            'eix': ('gentoo',)
         }
 
     def system_query_command(self):
-        if 'rpm' in  version.system_package_manager():
+        if 'rpm' in  Version.system_package_manager():
             system_query_command = 'rpm -qa'
-        elif 'apt' in version.system_package_manager():
-            system_query_command = 'dpkg --list'
-        elif 'eix' in version.system_package_manager():
+        elif 'apt' in Version.system_package_manager():
+            system_query_command = 'dpkg --get-selections'
+        elif 'eix' in Version.system_package_manager():
             system_query_command = 'eix -e --only-names'
         return system_query_command
 
     def grep_system_packages(self,package_name):
         comm = subprocess.Popen([self.system_query_command()
-            + " " + str(package_name)], shell=True, stdout=subprocess.PIPE)
-        if comm is not None:
-            logger.log("INFO", "Package "
-                + str(comm.stdout.read()).strip()
+            + " " + str(package_name)], shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE).stdout.read()
+        if not len(comm.strip()) == 0:
+            Logger.log("INFO", "Package "
+                + str(package_name)
                 + " was found.")
         else:
-            logger.log("ERROR", "Package "
-                + str(comm.stdout.read()).strip()
+            Logger.log("ERROR", "Package "
+                + str(package_name)
                 + " was not found.")
 
     def main(self):
         try:
-            for item in self.sys_dependencies[version.system_package_manager()]:
+            for item in self.sys_dependencies[Version.system_package_manager()]:
                 self.grep_system_packages(item)
         except DistutilsExecError as distutilsExecError:
-            logger.log("ERROR", "Exception DistutilsExecError: "
+            Logger.log("ERROR", "Exception DistutilsExecError: "
                 + str(distutilsExecError))
 
 class PrepareBuild(object):
 
-    def __init__(self):
-        pass
+    def __init__(self,*args,**kwargs):
+
+        cdll.LoadLibrary(args[0]).build()
+
+        self.check    = kwargs['setup_options']['check']
+        self.build    = kwargs['setup_options']['build']
+        self.sdist    = kwargs['setup_options']['sdist']
+        self.install  = kwargs['setup_options']['install']
+
+        self.email    = kwargs['config_dict']['email']
+        self.password = kwargs['config_dict']['password']
 
     def cron_tab(self):
         #Count need to be 1 in order to write to the crontab.
@@ -86,31 +95,86 @@ class PrepareBuild(object):
         cron = CronTab(user='root')
         job = cron.new(command=command)
         job.minute.every(1)
-        install = re.search('install', str(sys.argv[1]), re.M | re.I)
         for job in cron:
             grep = re.search(r'\/is_sshm_running.sh', str(job))
             if grep is not None:
                 count+=1
-        if count < 2 and install is not None:
-            logger.log("INFO", "Installing crontab.")
+        if count < 2 and self.install:
+            Logger.log("INFO", "Installing crontab.")
             cron.write()
-            print("Please nesure that the crontab was actually installed!")
-            print("To do so please run(without quotes) => 'sudo crontab -l -u root'")
+            Logger.log("WARN","Please nesure that the crontab was actually installed!")
+            Logger.log("WARN","To do so please run(without quotes) => 'sudo crontab -l -u root'")
 
 if __name__ == '__main__':
 
-    prepareBuild = PrepareBuild()
-    argument = re.match(r'(install|check|build|sdist)\b', str(sys.argv[1]))
+    parser = OptionParser()
+    parser.add_option(
+        '--check', dest='check', action="store_true", default=False
+    )
+    parser.add_option(
+        '--build', dest='build', action="store_true", default=False
+    )
+    parser.add_option(
+        '--sdist', dest='sdist', action="store_true", default=False
+    )
+    parser.add_option(
+        '--install', dest='install', action="store_true", default=False
+    )
+    parser.add_option('-e', '--email',
+        dest='email', default='sshmonitorapp@gmail.com',
+        help='This argument is required unless you pass the '
+            + 'pass the --disable-email flag on the command line. '
+            + 'Your E-mail address is used to notify you that'
+            + 'there is activity related to ssh attempts.')
+    parser.add_option('-p', '--password',
+        dest='password', default='hkeyscwhgxjzafvj',
+        help='This argument is required unless you pass the '
+            + 'pass the --disable-email flag on the command line. '
+            + 'Your E-mail password is used to send an E-mail of the ip '
+            + 'of the user sshing into your box, successful or not.')
+    (options, args) = parser.parse_args()
 
-    if argument is None:
-        logger.log("ERROR","Option is not supported.")
-        sys.exit(0)
-    elif 'check' in argument.group():
-        logger.log("INFO","Grepping System Packages")
-        Check().main()
-        sys.exit(0)
+    _config_dict = {
+        'email': options.email,
+        'password': options.password
+    }
 
-    logger.log('INFO', 'Entering setup in setup.py')
+    _setup_options = {
+        'check': options.check,
+        'build': options.build,
+        'sdist': options.sdist,
+        'install': options.install
+    }
+
+    if all(not _setup_options[options] for options in _setup_options):
+        if options.password is None or options.email is None:
+            Logger.log("ERROR","You must provide BOTH an E-mail AND password.")
+            sys.exit(0)
+
+    count = 0
+    for options in _setup_options:
+        if sum([ count++ _setup_options[opts] for opts in _setup_options]) == 2:
+            Logger.log('ERROR','Only one base options is permitted at a time.')
+            sys.exit(0)
+        elif _setup_options['check']:
+            Logger.log("INFO","Grepping System Packages")
+            Check().main()
+            sys.exit(0)
+        elif _setup_options['build']: 
+            Logger.log('INFO', 'Building setup!')
+            break
+        elif _setup_options['sdist']: 
+            Logger.log('INFO', 'Running sdist!')
+            break
+        elif _setup_options['install']: 
+            Logger.log('INFO', 'Installing sshmonitorapp.')
+            break
+
+    path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
+
+    prepareBuild = PrepareBuild(path,setup_options=_setup_options,config_dict=_config_dict)
+
+    Logger.log('INFO','Entering setup in setup.py')
 
     setup(name='sshmonitor',
     version='1.0.1',
@@ -137,6 +201,7 @@ if __name__ == '__main__':
     ],
     data_files=[
         ('/usr/lib/', ['src/lib/shared/libmasquerade.so']),
+        ('/usr/local/bin/', ['src/notify-gtk']),
         ('/usr/local/bin/', ['src/sshmonitor.py']),
         ('/home/root/.ssh/' ,['src/system/home/user/.ssh/is_sshm_running.sh'])],
     zip_safe=True,
