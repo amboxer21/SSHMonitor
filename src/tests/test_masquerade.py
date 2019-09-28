@@ -14,7 +14,7 @@ class TestMasquerade(object):
         self.libmasquerade.masquerade("anthony", "This is a test.")
 
 if __name__ == '__main__':
-    path = "/home/anthony/Documents/Python/sshmonitor/src/testing/libmasquerade2.so"
+    path = "/home/anthony/Documents/Python/sshmonitor/src/lib/shared/libmasquerade.so"
     test_masquerade = TestMasquerade(cdll.LoadLibrary(path))
     test_masquerade.main()
 
