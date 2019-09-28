@@ -102,8 +102,8 @@ class PrepareBuild(object):
         if count < 2 and self.install:
             Logger.log("INFO", "Installing crontab.")
             cron.write()
-            print("Please nesure that the crontab was actually installed!")
-            print("To do so please run(without quotes) => 'sudo crontab -l -u root'")
+            Logger.log("WARN","Please nesure that the crontab was actually installed!")
+            Logger.log("WARN","To do so please run(without quotes) => 'sudo crontab -l -u root'")
 
 if __name__ == '__main__':
 

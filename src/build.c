@@ -29,17 +29,17 @@ void build(void) {
     char *shared_object = "/src/lib/shared/libmasquerade.so";
 
     ssize_t so_buffer = strlen(cwd) + strlen(shared_object) + (sizeof(char *) * 2);
-    char *executable  = (char *)malloc(so_buffer * sizeof(char *));
-    snprintf(executable, so_buffer, "%s%s", cwd, shared_object);
+    char *library = (char *)malloc(so_buffer * sizeof(char *));
+    snprintf(library, so_buffer, "%s%s", cwd, shared_object);
 
     ssize_t exe_buffer = strlen(cwd) + strlen(program) + (sizeof(char *) * 2);
-    char *command = (char *)malloc(exe_buffer * sizeof(char *));
-    snprintf(command, exe_buffer, "%s%s", cwd, program);
+    char *executable = (char *)malloc(exe_buffer * sizeof(char *));
+    snprintf(executable, exe_buffer, "%s%s", cwd, program);
 
     char *envp[] = {setpath(), NULL};
 
     char *arguments[] = {
-        "/usr/bin/gcc", "-g", "-shared", "-o", shared_object, "-fPIC", command, (char *)NULL 
+        "/usr/bin/gcc", "-g", "-shared", "-o", library, "-fPIC", executable, (char *)NULL 
     };
     
     if(fork() == 0) {
@@ -48,7 +48,7 @@ void build(void) {
         execvpe(arguments[0], arguments, envp);
     }
 
-    free(command);
+    free(library);
     free(executable);
 
 }
