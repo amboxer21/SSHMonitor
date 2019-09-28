@@ -14,6 +14,12 @@ class Version(object):
         return "None"
 
     @staticmethod
+    def python_is_version(version=None):
+        if re.search('^'+str(version)+'\.\d+\.\d+', str(Version.python()), re.M | re.I) is None:
+            return False
+        return True
+        
+    @staticmethod
     def release():
         comm = subprocess.Popen(["lsb_release -irs"], shell=True, stdout=subprocess.PIPE)
         return re.search("(\w+)", str(comm.stdout.read())).group()

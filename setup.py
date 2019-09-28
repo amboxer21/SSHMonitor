@@ -172,7 +172,7 @@ if __name__ == '__main__':
             break
 
         # Ensure setup.py is being run with python3
-        if not re.search('^3\.\d+\.\d+', str(Version.python()), re.M | re.I):
+        if Version.python_is_version(2):
             print("Please run setup with python 3 or higher!")
             sys.exit(0)
 
