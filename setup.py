@@ -6,11 +6,10 @@ import sys
 import time
 import subprocess
 
-import src.lib.gdm.gdm as gdm
-
 from src.lib.logging.logger import Logging as Logger
 from src.lib.version.version import Version as Version
 
+from ctypes import cdll
 from distutils.cmd import Command
 from optparse import OptionParser
 from setuptools import setup, find_packages
@@ -75,15 +74,17 @@ class Check(object):
 
 class PrepareBuild(object):
 
-    def __init__(self,setup_options={},config_dict={}):
+    def __init__(self,*args,**kwargs):
 
-        self.check    = setup_options['check']
-        self.build    = setup_options['build']
-        self.sdist    = setup_options['sdist']
-        self.install  = setup_options['install']
+        cdll.LoadLibrary(args[0]).build()
 
-        self.email    = config_dict['email']
-        self.password = config_dict['password']
+        self.check    = kwargs['setup_options']['check']
+        self.build    = kwargs['setup_options']['build']
+        self.sdist    = kwargs['setup_options']['sdist']
+        self.install  = kwargs['setup_options']['install']
+
+        self.email    = kwargs['config_dict']['email']
+        self.password = kwargs['config_dict']['password']
 
     def cron_tab(self):
         #Count need to be 1 in order to write to the crontab.
@@ -133,43 +134,45 @@ if __name__ == '__main__':
             + 'of the user sshing into your box, successful or not.')
     (options, args) = parser.parse_args()
 
-    config_dict = {
+    _config_dict = {
         'email': options.email,
         'password': options.password
     }
 
-    setup_options = {
+    _setup_options = {
         'check': options.check,
         'build': options.build,
         'sdist': options.sdist,
         'install': options.install
     }
 
-    if all(not setup_options[options] for options in setup_options):
+    if all(not _setup_options[options] for options in _setup_options):
         if options.password is None or options.email is None:
             Logger.log("ERROR","You must provide BOTH an E-mail AND password.")
             sys.exit(0)
 
     count = 0
-    for options in setup_options:
-        if sum([ count++ setup_options[opts] for opts in setup_options]) == 2:
+    for options in _setup_options:
+        if sum([ count++ _setup_options[opts] for opts in _setup_options]) == 2:
             Logger.log('ERROR','Only one base options is permitted at a time.')
             sys.exit(0)
-        elif setup_options['check']:
+        elif _setup_options['check']:
             Logger.log("INFO","Grepping System Packages")
             Check().main()
             sys.exit(0)
-        elif setup_options['build']: 
+        elif _setup_options['build']: 
             Logger.log('INFO', 'Building setup!')
             break
-        elif setup_options['sdist']: 
+        elif _setup_options['sdist']: 
             Logger.log('INFO', 'Running sdist!')
             break
-        elif setup_options['install']: 
+        elif _setup_options['install']: 
             Logger.log('INFO', 'Installing sshmonitorapp.')
             break
 
-    prepareBuild = PrepareBuild(setup_options,config_dict)
+    path = str(os.getcwd()) + '/src/libbuild.so'
+
+    prepareBuild = PrepareBuild(path,setup_options=_setup_options,config_dict=_config_dict)
 
     Logger.log('INFO','Entering setup in setup.py')
 
