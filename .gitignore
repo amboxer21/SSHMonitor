@@ -2,6 +2,8 @@
 *.pyc
 *.backup
 *.original
+.eggs/
+dist/
 source/
 build/
 sshmonitor.egg-info/
