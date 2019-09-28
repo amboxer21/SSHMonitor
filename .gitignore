@@ -1,2 +1,7 @@
 *.sw*
 *.pyc
+*.backup
+*.original
+source/
+build/
+sshmonitor.egg-info/
