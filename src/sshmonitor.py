@@ -170,7 +170,7 @@ class Tail(object):
                 [process.stdout, process.stderr], [], [process.stdout, process.stderr], 0.1
             )
             if process.stdout in reads:
-                self.buffer += process.stdout.read()
+                self.buffer += str(process.stdout.read())
                 lines = self.buffer.split('\n')
                 
                 if '' in lines[-1]:
@@ -355,6 +355,9 @@ class SSHMonitor(object):
 if __name__ == '__main__':
 
     parser = OptionParser()
+    parser.add_option('-r', '--regex',
+        dest='log_regex',
+        help='Use custom regex to parse and monitor your logs.')
     parser.add_option('-D', '--disable-email',
         dest='disable_email', action='store_true', default=False,
         help='This option allows you to disable the sending of E-mails.')
@@ -404,6 +407,7 @@ if __name__ == '__main__':
 
     config_dict = {
         'email': options.email,
+        'regex': optiuons.regex,
         'logfile': options.logfile,
         'verbose': options.verbose,
         'password': options.password,
