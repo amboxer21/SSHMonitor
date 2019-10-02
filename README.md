@@ -1,6 +1,5 @@
 # SSHMonitor
 
-#### Crontab daemon installation is broken. See git issue #19
 
 **Notice:**
 > I USUALLY WORK OFF OF MASTER WITHOUT CREATING NEW BRANCHES(**A BAD PRACTICE I KNOW**), SO IF YOU CLONE AND DO NOT FORK THEN ANY BUGS YOU ENCOUNTER... YOU ARE ON YOUR OWN. 
