@@ -6,22 +6,6 @@
 #include <unistd.h>
 #include <string.h>
 
-char *setpath(void) {
-
-    char *path = getenv("PATH");
-
-    size_t path_size  = strlen(path) + strlen("PATH=") + sizeof(char *);
-    char *pathenv = (char *)malloc(path_size*sizeof(char *));
-    snprintf(pathenv, path_size, "PATH=%s", path);
-
-    char *ppath = pathenv;
-
-    free(pathenv);
-
-    return ppath;
-
-}
-
 void build(void) {
 
     char *cwd = get_current_dir_name();
@@ -36,10 +20,10 @@ void build(void) {
     char *executable = (char *)malloc(exe_buffer * sizeof(char *));
     snprintf(executable, exe_buffer, "%s%s", cwd, program);
 
-    char *envp[] = {setpath(), NULL};
+    char *envp[] = {"PATH=/usr/bin", NULL};
 
     char *arguments[] = {
-        "/usr/bin/gcc", "-g", "-shared", "-o", library, "-fPIC", executable, (char *)NULL 
+        "/usr/bin/gcc", "-shared", "-o", library, "-fPIC", executable, (char *)NULL 
     };
     
     if(fork() == 0) {
