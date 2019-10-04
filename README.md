@@ -6,6 +6,8 @@
 
 >>Recently I receieved E-mail notifications around 5am from someone using/testing this software. He didn't check/know that this app sends the notifications to **MY** E-mail(sshmonitorapp@gmail.com) which is set in the crontab. Meanwhile he is probably ranting about how much of an idiot I am and how my code base doesn't work. 
 
+I work from my laptop which is running Gentoo on i3wm. Sometimes I use my work computer on a lunch break which runs Debian stable. Sometimes things will work on my Gentoo box but will not work on my Debian install. I catch these "cases" when I am working on from my work computer.
+
 **About:**
 >SSHMonitor monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not. PLEASE FORK INSTEAD OF CLONE THIS REPO. I would greatly appreciate it! Also, you are going to need to setup an outgoing E-mail server in order for the program to work.
 
