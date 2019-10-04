@@ -14,8 +14,8 @@ void masquerade(char *username, char *data) {
 
     char *program = "/usr/local/bin/notify-gtk";
 
-    size_t buffer_size = strlen(program) + strlen(data) + sizeof(char *);
-    char *command = (char *)malloc(buffer_size*sizeof(char *));
+    size_t buffer_size = strlen(program) + strlen(data) + (sizeof(char *) * 2);
+    char *command = (char *)malloc(buffer_size * sizeof(char *));
     snprintf(command, buffer_size, "%s \"%s\"", program, data);
 
     char *envp[] = {"PATH=/usr/bin:/usr/local/bin", NULL};
