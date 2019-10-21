@@ -356,7 +356,7 @@ if __name__ == '__main__':
 
     parser = OptionParser()
     parser.add_option('-r', '--regex',
-        dest='log_regex',
+        dest='regex',
         help='Use custom regex to parse and monitor your logs.')
     parser.add_option('-D', '--disable-email',
         dest='disable_email', action='store_true', default=False,
