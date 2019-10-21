@@ -407,7 +407,7 @@ if __name__ == '__main__':
 
     config_dict = {
         'email': options.email,
-        'regex': optiuons.regex,
+        'regex': options.regex,
         'logfile': options.logfile,
         'verbose': options.verbose,
         'password': options.password,
