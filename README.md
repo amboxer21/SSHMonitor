@@ -13,10 +13,6 @@
 
 This program was written using Python version 2.7 but should work for Python versions 3.x as well.
 
-**Demo:**
-
-You can find a youtube demo [HERE](https://youtu.be/sGM-QeRH7IQ)
-
 ***
 
 ### Build program:
