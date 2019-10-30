@@ -9,7 +9,7 @@
 >>I work from my laptop which is running Gentoo on i3wm. Sometimes I use my work computer on a lunch break which runs Debian stable. Sometimes things will work on my Gentoo box but will not work on my Debian install. I catch these "cases" when I am working from my work computer.
 
 **Important:**
-> The notify with ui option is broken with Python3. Seems to be an issue with the ctypes system library. See PR [#22]()
+> The notify with ui option is broken with Python3. Seems to be an issue with the ctypes system library. See issue [#22](https://github.com/amboxer21/SSHMonitor/issues/22)
 
 **About:**
 >SSHMonitor monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not. PLEASE FORK INSTEAD OF CLONE THIS REPO. I would greatly appreciate it! Also, you are going to need to setup an outgoing E-mail server in order for the program to work.
