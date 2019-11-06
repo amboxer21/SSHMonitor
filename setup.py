@@ -172,9 +172,9 @@ if __name__ == '__main__':
             break
 
         # Ensure setup.py is being run with python3
-        if Version.python_is_version(2):
-            print("Please run setup with python 3 or higher!")
-            sys.exit(0)
+        #if Version.python_is_version(2):
+        #    print("Please run setup with python 3 or higher!")
+        #    sys.exit(0)
 
     path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
 
