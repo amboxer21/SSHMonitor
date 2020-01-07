@@ -1,4 +1,4 @@
-# SSHMonitor
+# SSHMonitor()
 
 
 **Notice:**
@@ -15,6 +15,8 @@
 >SSHMonitor monitors incoming ssh requests and will notify you on failed, successful or banned(IP via iptables/sshgaurd) attempts whether they're successful or not. PLEASE FORK INSTEAD OF CLONE THIS REPO. I would greatly appreciate it! Also, you are going to need to setup an outgoing E-mail server in order for the program to work.
 
 This program was written using Python version 2.7 but should work for Python versions 3.x as well.
+
+EDIT: As of **01-07-2020**, this app won't run when using Python3. 
 
 ***
 
