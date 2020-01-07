@@ -1,4 +1,4 @@
-# SSHMonitor() Python2
+# SSHMonitor(Python2)
 
 
 **Notice:**
