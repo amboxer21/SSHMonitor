@@ -351,6 +351,7 @@ class SSHMonitor(object):
             except KeyboardInterrupt:
                 Logging.log("INFO", " [Control C caught] - Exiting SSHMonitor now!")
                 break
+            time.sleep(1) 
 
 if __name__ == '__main__':
 
