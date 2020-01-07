@@ -17,6 +17,9 @@ from ctypes import cdll
 from optparse import OptionParser
 from email.mime.text import MIMEText
 
+# Custom library imports
+from lib.version.version import Version as Version
+
 class Logging(object):
 
     @staticmethod
@@ -72,8 +75,16 @@ class Logging(object):
 
 class FileOpts(object):
 
-    def __init__(self):
-        pass
+    def __init__(self,logfile):
+        if not self.dir_exists(self.root_directory()):
+            self.mkdir_p(self.root_directory())
+
+        for f in ['banned_ips','successful','banned']:
+            if not self.file_exists(self.root_directory() + "/" + f):
+                self.create_file(self.root_directory() + "/" + f)
+
+        if not self.file_exists(logfile):
+            self.create_file(logfile)
 
     def root_directory(self):
         return "/etc/sshguard"
@@ -351,6 +362,7 @@ class SSHMonitor(object):
             except KeyboardInterrupt:
                 Logging.log("INFO", " [Control C caught] - Exiting SSHMonitor now!")
                 break
+            time.sleep(1)
 
 if __name__ == '__main__':
 
@@ -396,11 +408,14 @@ if __name__ == '__main__':
 
     Mail.__disabled__ = options.disable_email
 
-    libmasquerade = None
-
     try:
-        path          = "/usr/lib/libmasquerade.so"
-        libmasquerade = cdll.LoadLibrary(path)
+        if Version.python_is_version(2):
+            path = "/usr/lib/libmasquerade.so"
+            libmasquerade = cdll.LoadLibrary(path)
+            Logging.log("INFO","Using Python version "+str(Version.python())+".")
+        else:
+            libmasquerade = None
+            Logging.log("INFO","Using Python version "+str(Version.python())+".")
     except OSError:
         libmasquerade = None
         pass
@@ -418,16 +433,5 @@ if __name__ == '__main__':
         'notify_with_ui': options.notify_with_ui
     }
 
-    fileOpts = FileOpts()
-
-    if not fileOpts.dir_exists(fileOpts.root_directory()):
-        fileOpts.mkdir_p(fileOpts.root_directory())
-
-    for f in ['banned_ips','successful','banned']:
-        if not fileOpts.file_exists(fileOpts.root_directory() + "/" + f): 
-            fileOpts.create_file(fileOpts.root_directory() + "/" + f)
-
-    if not fileOpts.file_exists('/var/log/sshmonitor.log'):
-        fileOpts.create_file('/var/log/sshmonitor.log')
-
+    fileOpts = FileOpts(options.logfile)
     SSHMonitor(config_dict).tail_file()
