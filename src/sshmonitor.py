@@ -89,7 +89,7 @@ class FileOpts(object):
         if not self.dir_exists(self.root_directory()):
             self.mkdir_p(self.root_directory())
 
-        for f in ['banned_ips','successful','banned']:
+        for f in ['failed','successful','banned']:
             if not self.file_exists(self.root_directory() + "/" + f):
                 self.create_file(self.root_directory() + "/" + f)
 
@@ -106,7 +106,7 @@ class FileOpts(object):
         return str(self.root_directory()) + '/successful'
 
     def banned_path(self):
-        return str(self.root_directory()) + '/banned_ips'
+        return str(self.root_directory()) + '/banned'
 
     def current_directory(self):
         return str(os.getcwd())
@@ -115,7 +115,6 @@ class FileOpts(object):
         return os.path.isfile(file_name)
 
     def create_file(self,file_name):
-        Logging.log("INFO", "File " + str(file_name) + " exists.")
         if not self.file_exists(file_name):
             Logging.log("INFO", "Creating file " + str(file_name) + ".")
             open(file_name, 'w')
