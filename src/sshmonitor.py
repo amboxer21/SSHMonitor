@@ -1,5 +1,3 @@
-#/usr/bin/env python
-    
 import re
 import os
 import sys
@@ -16,9 +14,6 @@ import logging.handlers
 from ctypes import cdll
 from optparse import OptionParser
 from email.mime.text import MIMEText
-
-# Custom library imports
-from lib.version.version import Version as Version
 
 class Logging(object):
 
@@ -72,6 +67,21 @@ class Logging(object):
                 + str(eLogging)))
             pass
         return
+
+class Version(object):
+
+    @staticmethod
+    def python():
+        python_version = re.search('\d\.\d\.\d', str(sys.version), re.I | re.M)
+        if python_version is not None:
+            return python_version.group()
+        return "None"
+
+    @staticmethod
+    def python_is_version(version=None):
+        if re.search('^'+str(version)+'\.\d+\.\d+', str(Version.python()), re.M | re.I) is None:
+            return False
+        return True
 
 class FileOpts(object):
 
