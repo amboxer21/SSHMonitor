@@ -380,15 +380,15 @@ if __name__ == '__main__':
     parser.add_option('--regex-failed',
         dest='regex_failed',
         default='(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$',
-        help='Use custom regex to parse and monitor your logs.')
+        help='Use custom regex to parse and monitor your logs for failed attempts.')
     parser.add_option('--regex-success',
         dest='regex_success',
         default='(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$', 
-        help='Use custom regex to parse and monitor your logs.')
+        help='Use custom regex to parse and monitor your logs for successful connections.')
     parser.add_option('--regex-blocked',
         dest='regex_blocked',
         default='(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$', 
-        help='Use custom regex to parse and monitor your logs.')
+        help='Use custom regex to parse and monitor your logs for blocked ip address.')
     parser.add_option('-D', '--disable-email',
         dest='disable_email', action='store_true', default=False,
         help='This option allows you to disable the sending of E-mails.')
