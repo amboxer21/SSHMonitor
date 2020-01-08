@@ -1,5 +1,5 @@
 #/usr/bin/env python
-    
+
 import re
 import os
 import sys
@@ -70,10 +70,33 @@ class Logging(object):
             pass
         return
 
+class Version(object):
+
+    @staticmethod
+    def python():
+        python_version = re.search('\d\.\d\.\d', str(sys.version), re.I | re.M)
+        if python_version is not None:
+            return python_version.group()
+        return "None"
+
+    @staticmethod
+    def python_is_version(version=None):
+        if re.search('^'+str(version)+'\.\d+\.\d+', str(Version.python()), re.M | re.I) is None:
+            return False
+        return True
+
 class FileOpts(object):
 
-    def __init__(self):
-        pass
+    def __init__(self,logfile):
+        if not self.dir_exists(self.root_directory()):
+            self.mkdir_p(self.root_directory())
+
+        for f in ['failed','successful','banned']:
+            if not self.file_exists(self.root_directory() + "/" + f):
+                self.create_file(self.root_directory() + "/" + f)
+
+        if not self.file_exists(logfile):
+            self.create_file(logfile)
 
     def root_directory(self):
         return "/etc/sshguard"
@@ -85,7 +108,7 @@ class FileOpts(object):
         return str(self.root_directory()) + '/successful'
 
     def banned_path(self):
-        return str(self.root_directory()) + '/banned_ips'
+        return str(self.root_directory()) + '/banned'
 
     def current_directory(self):
         return str(os.getcwd())
@@ -94,7 +117,6 @@ class FileOpts(object):
         return os.path.isfile(file_name)
 
     def create_file(self,file_name):
-        Logging.log("INFO", "File " + str(file_name) + " exists.")
         if not self.file_exists(file_name):
             Logging.log("INFO", "Creating file " + str(file_name) + ".")
             open(file_name, 'w')
@@ -200,6 +222,9 @@ class SSHMonitor(object):
         self.password       = config_dict['password']
         self.email_port     = config_dict['email_port']
         self.disable_log    = config_dict['disable_log']
+        self.regex_failed   = config_dict['regex_failed']
+        self.regex_success  = config_dict['regex_success']
+        self.regex_blocked  = config_dict['regex_blocked']
         self.disable_email  = config_dict['disable_email']
         self.libmasquerade  = config_dict['libmasquerade']
         self.notify_with_ui = config_dict['notify_with_ui']
@@ -284,12 +309,9 @@ class SSHMonitor(object):
                 for line in self.tail.f(self.logfile):
 
                     #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
-                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password"
-                        + " for (.*) from (.*) port.*$", line, re.I | re.M)
-                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
-                        + " for.*from (.*) port.*$", line, re.I | re.M)
-                    blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
-                        + " (.*) for.*$", line, re.I | re.M)
+                    success = re.search(self.regex_success, line, re.I | re.M)
+                    failed  = re.search(self.regex_failed, line, re.I | re.M)
+                    blocked = re.search(self.regex_blocked, line, re.I | re.M)
 
                     if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
@@ -351,14 +373,23 @@ class SSHMonitor(object):
             except KeyboardInterrupt:
                 Logging.log("INFO", " [Control C caught] - Exiting SSHMonitor now!")
                 break
-            time.sleep(1) 
+            time.sleep(1)
 
 if __name__ == '__main__':
 
     parser = OptionParser()
-    parser.add_option('-r', '--regex',
-        dest='regex',
-        help='Use custom regex to parse and monitor your logs.')
+    parser.add_option('--regex-failed',
+        dest='regex_failed',
+        default='(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$',
+        help='Use custom regex to parse and monitor your logs for failed attempts.')
+    parser.add_option('--regex-success',
+        dest='regex_success',
+        default='(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$', 
+        help='Use custom regex to parse and monitor your logs for successful connections.')
+    parser.add_option('--regex-blocked',
+        dest='regex_blocked',
+        default='(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$', 
+        help='Use custom regex to parse and monitor your logs for blocked ip address.')
     parser.add_option('-D', '--disable-email',
         dest='disable_email', action='store_true', default=False,
         help='This option allows you to disable the sending of E-mails.')
@@ -397,38 +428,32 @@ if __name__ == '__main__':
 
     Mail.__disabled__ = options.disable_email
 
-    libmasquerade = None
-
     try:
-        path          = "/usr/lib/libmasquerade.so"
-        libmasquerade = cdll.LoadLibrary(path)
+        if Version.python_is_version(2):
+            path = "/usr/lib/libmasquerade.so"
+            libmasquerade = cdll.LoadLibrary(path)
+            Logging.log("INFO","Using Python version "+str(Version.python())+".")
+        else:
+            libmasquerade = None
+            Logging.log("INFO","Using Python version "+str(Version.python())+".")
     except OSError:
         libmasquerade = None
         pass
 
     config_dict = {
         'email': options.email,
-        'regex': options.regex,
         'logfile': options.logfile,
         'verbose': options.verbose,
         'password': options.password,
         'libmasquerade': libmasquerade,
         'email_port': options.email_port,
         'disable_log': options.disable_log,
+        'regex_failed': options.regex_failed,
+        'regex_success': options.regex_success,
+        'regex_blocked': options.regex_blocked,
         'disable_email': options.disable_email,
         'notify_with_ui': options.notify_with_ui
     }
 
-    fileOpts = FileOpts()
-
-    if not fileOpts.dir_exists(fileOpts.root_directory()):
-        fileOpts.mkdir_p(fileOpts.root_directory())
-
-    for f in ['banned_ips','successful','banned']:
-        if not fileOpts.file_exists(fileOpts.root_directory() + "/" + f): 
-            fileOpts.create_file(fileOpts.root_directory() + "/" + f)
-
-    if not fileOpts.file_exists('/var/log/sshmonitor.log'):
-        fileOpts.create_file('/var/log/sshmonitor.log')
-
+    fileOpts = FileOpts(options.logfile)
     SSHMonitor(config_dict).tail_file()
