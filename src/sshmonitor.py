@@ -221,6 +221,9 @@ class SSHMonitor(object):
         self.password       = config_dict['password']
         self.email_port     = config_dict['email_port']
         self.disable_log    = config_dict['disable_log']
+        self.regex_failed   = config_dict['regex_failed']
+        self.regex_success  = config_dict['regex_success']
+        self.regex_blocked  = config_dict['regex_blocked']
         self.disable_email  = config_dict['disable_email']
         self.libmasquerade  = config_dict['libmasquerade']
         self.notify_with_ui = config_dict['notify_with_ui']
@@ -305,12 +308,9 @@ class SSHMonitor(object):
                 for line in self.tail.f(self.logfile):
 
                     #"Accepted password for nobody from 200.255.100.101 port 58972 ssh2"
-                    success = re.search("(^.*\d+:\d+:\d+).*sshd.*Accepted password"
-                        + " for (.*) from (.*) port.*$", line, re.I | re.M)
-                    failed  = re.search("(^.*\d+:\d+:\d+).*sshd.*Failed password"
-                        + " for.*from (.*) port.*$", line, re.I | re.M)
-                    blocked = re.search("(^.*\d+:\d+:\d+).*sshguard.*Blocking"
-                        + " (.*) for.*$", line, re.I | re.M)
+                    success = re.search(self.regex_success, line, re.I | re.M)
+                    failed  = re.search(self.regex_failed, line, re.I | re.M)
+                    blocked = re.search(self.regex_blocked, line, re.I | re.M)
 
                     if success is not None:
                         Logging.log("INFO", "Successful SSH login from "
@@ -377,8 +377,17 @@ class SSHMonitor(object):
 if __name__ == '__main__':
 
     parser = OptionParser()
-    parser.add_option('-r', '--regex',
-        dest='regex',
+    parser.add_option('--regex-failed',
+        dest='regex_failed',
+        default='(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$',
+        help='Use custom regex to parse and monitor your logs.')
+    parser.add_option('--regex-success',
+        dest='regex_success',
+        default='(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$', 
+        help='Use custom regex to parse and monitor your logs.')
+    parser.add_option('--regex-blocked',
+        dest='regex_blocked',
+        default='(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$', 
         help='Use custom regex to parse and monitor your logs.')
     parser.add_option('-D', '--disable-email',
         dest='disable_email', action='store_true', default=False,
@@ -432,13 +441,15 @@ if __name__ == '__main__':
 
     config_dict = {
         'email': options.email,
-        'regex': options.regex,
         'logfile': options.logfile,
         'verbose': options.verbose,
         'password': options.password,
         'libmasquerade': libmasquerade,
         'email_port': options.email_port,
         'disable_log': options.disable_log,
+        'regex_failed': options.regex_failed,
+        'regex_success': options.regex_success,
+        'regex_blocked': options.regex_blocked,
         'disable_email': options.disable_email,
         'notify_with_ui': options.notify_with_ui
     }
