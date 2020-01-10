@@ -1,20 +1,27 @@
 [Date/Time]
-03/09/18 9:01a.m.
+05/22/19
 
-[Reason]
-Forgot to add a description. Adding description to next version.
-
-[Version at]
-version 0.0.2
-
-[Version to]
-version 0.0.3 
+[Change]
+I recently wrote my own implementation of the problematic pytailf, so I removed the import and integrated it directly into the
+sshmonitor.py script. This made the patch obsolete, so I removed the patch dir from the project.
 
 ----------------------------------------------------------------
 
 [Date/Time]
-05/22/19 11:43am
+Jan 7, 2020, 2:32 PM EST
 
-[REASON]
-I recently wrote my own implementation of the problematic pytailf, so i removed the import and integrated it directly into the
-sshmonitor.py script. This made the patch obsolete, so I removed the patch dir from the project.
+[Change]
+I added a one second sleep to the end of the tail file method so that it doesnt cause a spike in the load. 
+
+----------------------------------------------------------------
+
+[Date/Time]
+Jan 7, 2020, 8:38 PM EST
+
+[Change]
+Added the ability to specify your own regex on the command line as an arg that is passed to the program. 
+If none are passed then the defaults are used. 
+
+----------------------------------------------------------------
+
+
