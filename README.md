@@ -1,4 +1,4 @@
-# SSHMonitor(Python2)
+# SSHMonitor(Python2) ** PLEASE CHANGE THE E-mail address that the app uses. I am getting E-mails from people using/testing this software. **
 
 
 **Notice:**
