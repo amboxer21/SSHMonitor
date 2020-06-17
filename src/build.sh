@@ -50,7 +50,7 @@ function main() {
     copy_ui_to_path;
     chown_ui;
 
-    #compile_main;
+    compile_main;
     compile_shared_object;
     copy_shared_object_to_path;
 } 
