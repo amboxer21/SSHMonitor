@@ -165,7 +165,7 @@ class Tail(object):
 
     def __init__(self):
         self.buffer       = str()
-        self.tail_command = ['/usr/bin/tail', '-F', '-n0']
+        self.tail_command = ['/usr/bin/sudo', '/usr/bin/tail', '-F', '-n0']
 
     def process(self,filename):
 
@@ -236,7 +236,7 @@ class SSHMonitor(object):
         self.display_options()
 
         if self.notify_with_ui and self.libmasquerade is None:
-            Logging.log('WARN', '/usr/lib/masquerade.so not found! '
+            Logging.log('WARN', '/usr/lib/libmasquerade.so not found! '
                 + 'UI notifications will not work.') 
 
     def display_options(self):
@@ -339,9 +339,9 @@ class SSHMonitor(object):
                         if self.notify_with_ui and self.libmasquerade is not None:
                             SSHMonitor.start_thread(self.libmasquerade.masquerade,'anthony',
                                 'Failed SSH attempt',"Failed ssh attempt from "
-                                + failed.group(3)
+                                + failed.group(2)
                                 + " at "
-                                + success.group(1))
+                                + failed.group(1))
                         SSHMonitor.start_thread(self.log_attempt,"failed", failed.group(2), failed.group(1))
                         SSHMonitor.start_thread(Mail.send,self.email, self.email, self.password, self.email_port,
                             'Failed SSH attempt',"Failed ssh attempt from "
@@ -380,15 +380,15 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('--regex-failed',
         dest='regex_failed',
-        default='(^.*\d+:\d+:\d+).*sshd.*Failed password for.*from (.*) port.*$',
+        default='(^.*[0-9]*:[0-9]*:[0-9]*).*sshd.*Failed password for.*from (.*) port.*$',
         help='Use custom regex to parse and monitor your logs for failed attempts.')
     parser.add_option('--regex-success',
         dest='regex_success',
-        default='(^.*\d+:\d+:\d+).*sshd.*Accepted password for (.*) from (.*) port.*$', 
+        default='(^.*[0-9]*:[0-9]*:[0-9]*).*sshd.*Accepted password for (.*) from (.*) port.*$', 
         help='Use custom regex to parse and monitor your logs for successful connections.')
     parser.add_option('--regex-blocked',
         dest='regex_blocked',
-        default='(^.*\d+:\d+:\d+).*sshguard.*Blocking (.*) for.*$', 
+        default='(^.*[0-9]*:[0-9]*:[0-9]*).*sshguard.*Blocking (.*) for.*$', 
         help='Use custom regex to parse and monitor your logs for blocked ip address.')
     parser.add_option('-D', '--disable-email',
         dest='disable_email', action='store_true', default=False,
@@ -434,7 +434,8 @@ if __name__ == '__main__':
             libmasquerade = cdll.LoadLibrary(path)
             Logging.log("INFO","Using Python version "+str(Version.python())+".")
         else:
-            libmasquerade = None
+            path = "/usr/lib/libmasquerade.so"
+            libmasquerade = cdll.LoadLibrary(path)
             Logging.log("INFO","Using Python version "+str(Version.python())+".")
     except OSError:
         libmasquerade = None
