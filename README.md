@@ -35,6 +35,8 @@ Installation command:
 pip install sshmonitor
 ```
 
+***
+
 ### Checking out SSHMonitor3 branch
 
 #### If you already have a cloned repo on your localhost
@@ -66,5 +68,7 @@ anthony@ghost:~/Documents/SSHMonitor2.7$ git branch
 * SSHMonitor3
 anthony@ghost:~/Documents/SSHMonitor2.7$
 ```
+
+***
 
 NOTE: Patch is no longer needed for newer versions of python, namely 3.x.x.
