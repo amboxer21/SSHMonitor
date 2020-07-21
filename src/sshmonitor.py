@@ -185,6 +185,7 @@ class Tail(object):
     
     def f(self, filename):
 
+        empty   = None
         process = self.process(filename)
         
         while True:
@@ -200,11 +201,21 @@ class Tail(object):
                     self.buffer = str()
                 else:
                     self.buffer = lines[-1]
-                lines = lines[:-1]
+
+                # Start of Python interoperability patch
+                if not lines[:-1]:
+                    empty = True
+                    lines = lines[-1]
+                else:
+                    empty = False
+                    lines = lines[:-1]
     
-                if lines:
+                if lines and not empty:
                     for line in lines:
                         yield line
+                else:
+                    yield lines
+                # End of Python interoperability patch
                     
             if process.stderr in reads:
                 stderr_input = process.stderr.read()
