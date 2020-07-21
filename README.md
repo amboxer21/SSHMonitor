@@ -34,7 +34,9 @@ Installation command:
 pip install sshmonitor
 ```
 
-### Checkout python compatible branch:
+### Checking out SSHMonitor3 branch
+
+#### If you already have a cloned repo on your localhost
 ```javascript
 anthony@ghost:~/Documents/SSHMonitor2.7$ git branch --track SSHMonitor3 origin/SSHMonitor3
 Branch 'SSHMonitor3' set up to track remote branch 'SSHMonitor3' from 'origin'.
@@ -45,6 +47,23 @@ anthony@ghost:~/Documents/SSHMonitor2.7$ git branch
 * SSHMonitor3
   master
 anthony@ghost:~/Documents/SSHMonitor2.7$ 
+```
+
+#### Checking out the SSHMonitor3 branch **ONLY** 
+
+```javascript
+anthony@ghost:~/Documents$ git clone git@github.com:amboxer21/SSHMonitor2.7.git -bSSHMonitor3
+Cloning into 'SSHMonitor2.7'...
+remote: Enumerating objects: 15, done.
+remote: Counting objects: 100% (15/15), done.
+remote: Compressing objects: 100% (15/15), done.
+remote: Total 1009 (delta 6), reused 1 (delta 0), pack-reused 994
+Receiving objects: 100% (1009/1009), 3.76 MiB | 10.79 MiB/s, done.
+Resolving deltas: 100% (586/586), done.
+anthony@ghost:~/Documents$ cd SSHMonitor2.7/
+anthony@ghost:~/Documents/SSHMonitor2.7$ git branch
+* SSHMonitor3
+anthony@ghost:~/Documents/SSHMonitor2.7$
 ```
 
 NOTE: Patch is no longer needed for newer versions of python, namely 3.x.x.
