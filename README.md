@@ -34,9 +34,17 @@ Installation command:
 pip install sshmonitor
 ```
 
-## Checkout python compatible branch:
-```
-
+### Checkout python compatible branch:
+```javascript
+anthony@ghost:~/Documents/SSHMonitor2.7$ git branch --track SSHMonitor3 origin/SSHMonitor3
+Branch 'SSHMonitor3' set up to track remote branch 'SSHMonitor3' from 'origin'.
+anthony@ghost:~/Documents/SSHMonitor2.7$ git checkout SSHMonitor3
+Switched to branch 'SSHMonitor3'
+Your branch is up to date with 'origin/SSHMonitor3'.
+anthony@ghost:~/Documents/SSHMonitor2.7$ git branch
+* SSHMonitor3
+  master
+anthony@ghost:~/Documents/SSHMonitor2.7$ 
 ```
 
 NOTE: Patch is no longer needed for newer versions of python, namely 3.x.x.
