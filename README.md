@@ -7,6 +7,8 @@
 
 >As of **07-21-2020**, this app is now compatible with Python3. Checkout this branch for use with Python3: https://github.com/amboxer21/SSHMonitor2.7/tree/SSHMonitor3 
 
+>As of **07-21-2020**, this app can be used with both Python3 **AND** Python2.
+
 **Important:**
 > The notify with ui option is broken with Python3. There seems to be an issue with the **ctypes** system library. See issue [#22](https://github.com/amboxer21/SSHMonitor/issues/22).
 
