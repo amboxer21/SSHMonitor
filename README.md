@@ -3,9 +3,9 @@
 **PLEASE CHANGE THE E-mail address that the app uses. I am getting E-mails from people using/testing this software.**
 
 **Notice:**
->As of **01-07-2020**, this app no longer runs when using Python3.
+>[**OLD**] As of **01-07-2020**, this app no longer runs when using Python3.
 
->As of **07-21-2020**, this app is now compatible with Python3. Checkout this branch for use with Python3: https://github.com/amboxer21/SSHMonitor2.7/tree/SSHMonitor3 
+>[**OLD**] As of **07-21-2020**, this app is now compatible with Python3. Checkout this branch for use with Python3: https://github.com/amboxer21/SSHMonitor2.7/tree/SSHMonitor3 
 
 >As of **07-21-2020**, this app can be used with both Python3 **AND** Python2.
 
