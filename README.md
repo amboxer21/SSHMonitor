@@ -74,4 +74,86 @@ anthony@ghost:~/Documents/SSHMonitor2.7$
 
 ***
 
+#### Compiling
+
+##### Creating libmasquerade shared object WITHOUT pthread
+
+```javascript
+gcc -c -fPIC masquerade.c -o masquerade.o
+gcc masquerade.o -shared -o libmasquerade.so
+```
+
+or 
+
+```javascript
+gcc -shared -o libmasquerade.so -fPIC masquerade.c
+```
+
+```
+anthony@ghost:~/Documents/Python/SSHMonitor2.7/src$ ldd libmasquerade.so
+	linux-vdso.so.1 (0x00007fff7a942000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f959891b000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f9598b02000)
+anthony@ghost:~/Documents/Python/SSHMonitor2.7/src$
+```
+
+##### Creating libmasquerade shared object WITH pthread
+
+```javascript
+gcc -c -fPIC masquerade.c -o masquerade.o
+gcc masquerade.o -shared -o libmasquerade.so -lpthread
+```
+
+or
+
+```javascript
+gcc -shared -o libmasquerade.so -fPIC masquerade.c -lpthread
+```
+
+```
+anthony@ghost:~/Documents/Python/SSHMonitor2.7/src$ ldd libmasquerade.so
+	linux-vdso.so.1 (0x00007ffc76d36000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fa6dcd2a000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fa6dcb69000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fa6dcd71000)
+anthony@ghost:~/Documents/Python/SSHMonitor2.7/src$
+```
+
+#### Compile GTK UI WITH pthread
+```javascript
+gcc notify-gtk.c -o notify-gtk `pkg-config --cflags --libs gtk+-2.0` -lpthread
+```
+
+or
+
+```javascript
+gcc -shared -o libmasquerade.so -fPIC masquerade.c -lpthread
+```
+
+#### Compile GTK UI WITHOUT pthread
+```javascript
+gcc notify-gtk.c -o notify-gtk `pkg-config --cflags --libs gtk+-2.0`
+```
+
+or
+
+```javascript
+gcc -shared -o libmasquerade.so -fPIC masquerade.c
+```
+
+### Testing the UI with Python2.x
+```javascript
+anthony@ghost:~/Documents/Python/sshmonitor/src$ sudo python
+Python 2.7.13 (default, Sep 26 2018, 18:42:22) 
+[GCC 6.3.0 20170516] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import os, ctypes
+>>> from ctypes import cdll
+>>> libmasquerade = cdll.LoadLibrary('/home/anthony/Documents/Python/sshmonitor/src/libmasquerade.so')
+>>> libmasquerade.masquerade('anthony')
+anthony
+```
+
+***
+
 NOTE: Patch is no longer needed for newer versions of python, namely 3.x.x.

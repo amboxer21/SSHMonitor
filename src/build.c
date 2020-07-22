@@ -9,12 +9,12 @@
 
 char *chomp(char *s) {
 
-    char *n = malloc( strlen( s ? s : "\n" ) );
+    char *n = malloc(strlen( s ? s : "\n"));
 
     if(s) {
-        strcpy( n, s );
+        strcpy(n, s);
     }
-    n[strlen(n)-1]='\0';
+    n[strlen(n)-1] = '\0';
     return n;
 }
 
