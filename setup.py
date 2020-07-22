@@ -21,16 +21,15 @@ class Check(object):
 
         self.sys_dependencies = {
             'rpm': (
-                'gtk+-devel','gtk2-devel','python-devel',
-                'syslog-ng','sendmail-cf','sendmail-devel','procmail'
+                'gtk+-devel','gtk2-devel',
+                'python-devel','syslog-ng',
             ),
             'eix': (
-                'x11-libs/gtk+:2','x11-libs/gtk+:3','mail-filter/procmail',
-                'mail-mta/sendmail','app-admin/syslog-ng','dev-lang/python',
+                'x11-libs/gtk+:2','x11-libs/gtk+:3',
+                'app-admin/syslog-ng','dev-lang/python',
             ),
             'apt': (
-                'libgtk2.0-dev','python-dev','procmail','sendmail-bin',
-                'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
+                'libgtk2.0-dev','python-dev','syslog-ng',
             )
         }
 
