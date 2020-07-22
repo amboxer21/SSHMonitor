@@ -80,13 +80,19 @@ if __name__ == '__main__':
 
     path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
 
-    prepareBuild = PrepareBuild(path)
+    Logger.log('INFO','Checking system dependencies.')
+    check = Check()
+    check.main()
+
+    Logger.log('INFO','Building libraries.')
+    path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
+    cdll.LoadLibrary(path).build()
 
     Logger.log('INFO','Entering setup in setup.py')
 
     setup(name='sshmonitor',
-    version='1.0.1',
-    url='https://github.com/amboxer21/SSHMonitor2.7',
+    version='2.0.0',
+    url='https://github.com/amboxer21/SSHMonitor',
     license='GPL-3.0',
     author='Anthony Guevara',
     author_email='amboxer21@gmail.com',
