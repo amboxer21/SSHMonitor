@@ -11,7 +11,6 @@ from src.lib.version.version import Version as Version
 
 from ctypes import cdll
 from distutils.cmd import Command
-from optparse import OptionParser
 from setuptools import setup, find_packages
 from subprocess import Popen, call, PIPE, STDOUT
 from distutils.errors import DistutilsError, DistutilsExecError
@@ -22,16 +21,15 @@ class Check(object):
 
         self.sys_dependencies = {
             'rpm': (
-                'gtk+-devel','gtk2-devel','python-devel',
-                'syslog-ng','sendmail-cf','sendmail-devel','procmail'
+                'gtk+-devel','gtk2-devel',
+                'python-devel','syslog-ng',
             ),
             'eix': (
-                'x11-libs/gtk+:2','x11-libs/gtk+:3','mail-filter/procmail',
-                'mail-mta/sendmail','app-admin/syslog-ng','dev-lang/python',
+                'x11-libs/gtk+:2','x11-libs/gtk+:3',
+                'app-admin/syslog-ng','dev-lang/python',
             ),
             'apt': (
-                'libgtk2.0-dev','python-dev','procmail','sendmail-bin',
-                'sendmail-cf','sensible-mda','syslog-ng','sendmail-base',
+                'libgtk2.0-dev','python-dev','syslog-ng',
             )
         }
 
@@ -75,115 +73,24 @@ class Check(object):
 class PrepareBuild(object):
 
     def __init__(self,*args,**kwargs):
-
         cdll.LoadLibrary(args[0]).build()
-
-        self.check    = kwargs['setup_options']['check']
-        self.build    = kwargs['setup_options']['build']
-        self.sdist    = kwargs['setup_options']['sdist']
-        self.install  = kwargs['setup_options']['install']
-
-        self.email    = kwargs['config_dict']['email']
-        self.password = kwargs['config_dict']['password']
-
-    def cron_tab(self):
-        #Count need to be 1 in order to write to the crontab.
-        #Basically, checking for grep being None or not None will 
-        #not work in this case and we need to check for 2 occurances.
-        count=0
-        cmd="/bin/bash /home/root/.ssh/is_sshm_running.sh"
-        cron = CronTab(user='root')
-        job  = cron.new(command=cmd)
-        job.minute.every(1)
-        for job in cron:
-            grep = re.search(r'\/is_sshm_running.sh', str(job))
-            if grep is not None:
-                count+=1
-        #if count < 2 and self.install:
-        if count < 2:
-            Logger.log("INFO", "Installing crontab.")
-            cron.write()
-            Logger.log("WARN","Please nesure that the crontab was actually installed!")
-            Logger.log("WARN","To do so please run(without quotes) => 'sudo crontab -l -u root'")
 
 if __name__ == '__main__':
 
-    parser = OptionParser()
-    parser.add_option(
-        '--check', dest='check', action="store_true", default=False
-    )
-    parser.add_option(
-        '--build', dest='build', action="store_true", default=False
-    )
-    parser.add_option(
-        '--sdist', dest='sdist', action="store_true", default=False
-    )
-    parser.add_option(
-        '--install', dest='install', action="store_true", default=False
-    )
-    parser.add_option('-e', '--email',
-        dest='email', default='sshmonitorapp@gmail.com',
-        help='This argument is required unless you pass the '
-            + 'pass the --disable-email flag on the command line. '
-            + 'Your E-mail address is used to notify you that'
-            + 'there is activity related to ssh attempts.')
-    parser.add_option('-p', '--password',
-        dest='password', default='hkeyscwhgxjzafvj',
-        help='This argument is required unless you pass the '
-            + 'pass the --disable-email flag on the command line. '
-            + 'Your E-mail password is used to send an E-mail of the ip '
-            + 'of the user sshing into your box, successful or not.')
-    (options, args) = parser.parse_args()
-
-    _config_dict = {
-        'email': options.email,
-        'password': options.password
-    }
-
-    _setup_options = {
-        'check': options.check,
-        'build': options.build,
-        'sdist': options.sdist,
-        'install': options.install
-    }
-
-    if all(not _setup_options[options] for options in _setup_options):
-        if options.password is None or options.email is None:
-            Logger.log("ERROR","You must provide BOTH an E-mail AND password.")
-            sys.exit(0)
-
-    count = 0
-    for options in _setup_options:
-        if sum([ count++ _setup_options[opts] for opts in _setup_options]) == 2:
-            Logger.log('ERROR','Only one base options is permitted at a time.')
-            sys.exit(0)
-        elif _setup_options['check']:
-            Logger.log("INFO","Grepping System Packages")
-            Check().main()
-            sys.exit(0)
-        elif _setup_options['build']: 
-            Logger.log('INFO', 'Building setup!')
-            break
-        elif _setup_options['sdist']: 
-            Logger.log('INFO', 'Running sdist!')
-            break
-        elif _setup_options['install']: 
-            Logger.log('INFO', 'Installing sshmonitorapp.')
-            break
-
-        # Ensure setup.py is being run with python3
-        #if Version.python_is_version(2):
-        #    print("Please run setup with python 3 or higher!")
-        #    sys.exit(0)
-
     path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
 
-    prepareBuild = PrepareBuild(path,setup_options=_setup_options,config_dict=_config_dict)
+    Logger.log('INFO','Checking system dependencies.')
+    check = Check()
+    check.main()
+
+    Logger.log('INFO','Building libraries.')
+    path = str(os.getcwd()) + '/src/lib/shared/libbuild.so'
+    cdll.LoadLibrary(path).build()
 
     Logger.log('INFO','Entering setup in setup.py')
 
     setup(name='sshmonitor',
-    version='1.0.1',
+    version='2.0.0',
     url='https://github.com/amboxer21/SSHMonitor',
     license='GPL-3.0',
     author='Anthony Guevara',
@@ -208,10 +115,5 @@ if __name__ == '__main__':
     data_files=[
         ('/usr/lib/', ['src/lib/shared/libmasquerade.so']),
         ('/usr/local/bin/', ['src/notify-gtk']),
-        ('/usr/local/bin/', ['src/sshmonitor.py']),
-        ('/home/root/.ssh/' ,['src/system/home/user/.ssh/is_sshm_running.sh'])],
-    zip_safe=True,
-    setup_requires=['python-crontab'],)
-
-    from crontab import CronTab
-    prepareBuild.cron_tab()
+        ('/usr/local/bin/', ['src/sshmonitor.py'])],
+    zip_safe=True,)
