@@ -7,6 +7,22 @@
 #include <unistd.h>
 #include <string.h>
 
+char *pkg_config(char *pkg) {
+
+    char *envp[] = {"PATH=/usr/bin", NULL};
+
+    char *arguments[] = {
+        "/usr/bin/pkg-config", "--cflags", "--libs", pkg, (char *)NULL
+    };
+
+    ssize_t exec_buffer = sizeof(arguments) + sizeof(envp) + (sizeof(char *) * 2);
+    char *executable = (char *)malloc(exec_buffer * sizeof(char *));
+    snprintf(executable, exec_buffer, "%s", execvpe(arguments[0], arguments, envp));
+
+    return executable;
+
+}
+
 char *chomp(char *s) {
 
     char *n = malloc(strlen( s ? s : "\n"));
