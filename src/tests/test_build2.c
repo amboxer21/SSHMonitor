@@ -1,27 +1,12 @@
-#define _GNU_SOURCE
-
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
 
-int length(char **array) {
-     int len = *(&array + 1) - array;
-     return len;
-}
-
-char *chomp(char *s) {
-
-    char *n = malloc(strlen( s ? s : "\n"));
-
-    if(s) {
-        strcpy(n, s);
-    }
-    n[strlen(n)-1] = '\0';
-    return n;
-}
+#include "build.h"
 
 int compile_libmasquerade() {
 
@@ -63,23 +48,9 @@ int compile_libmasquerade() {
 
 }
 
-char *setpath(void) {
+char *compile_gtk(char *pkg_config) {
 
-    char *path = getenv("PATH");
-
-    size_t path_size  = strlen(path) + strlen("PATH=") + sizeof(char *);
-    char *pathenv = (char *)malloc(path_size*sizeof(char *));
-    snprintf(pathenv, path_size, "PATH=%s", path);
-
-    char *ppath = pathenv;
-
-    free(pathenv);
-
-    return ppath;
-
-}
-
-int compile_gtk(char *pkg_config) {
+    Argument **args = (Argument **)pkg_config;
 
     char *cwd = get_current_dir_name();
     char *program = "/notify-gtk.c";
@@ -94,16 +65,11 @@ int compile_gtk(char *pkg_config) {
     char *executable = (char *)malloc(buffer_size * sizeof(char *));
     snprintf(executable, buffer_size, "%s%s", cwd, exe);
 
-    printf("executable path: %s\n",executable);
-
     char *envp[] = {setpath(), NULL};
 
     char *arguments[] = { "/usr/bin/gcc", command, "-o", executable, pkg_config, (char *)NULL };
     
-    if(fork() == 0) {
-        execvpe(arguments[0], arguments, envp);
-        _exit(-1);
-    }
+    execvpe(arguments[0], arguments, envp);
 
     free(command);
     free(executable);
@@ -112,31 +78,79 @@ int compile_gtk(char *pkg_config) {
 
 }
 
-char *pkg_config(char *pkg) {
+void *pkg_config(void *pakage) {
+
+    Argument **pkg = (Argument **)pakage;
 
     char *envp[] = {setpath(), NULL};
 
     char *arguments[] = {
-        "/usr/bin/pkg-config", "--cflags", "--libs", pkg, (char *)NULL 
+        "/usr/bin/pkg-config", "--cflags", "--libs", (*pkg)->pkgconfig, (char *)NULL 
     };
 
-    ssize_t exec_buffer = length(arguments) + length(envp) + (sizeof(char *) * 2);
-    char *executable = (char *)malloc(exec_buffer * sizeof(char *));
-
-    if(fork() == 0) {
-        snprintf(executable, exec_buffer, "%s", execvpe(arguments[0], arguments, envp));
-        _exit(-1);
-    }
-
-    char *pkgconfig = strndup(executable, sizeof(executable));
-    free(executable);
-
-    return pkgconfig;
-
+    execvpe(arguments[0], arguments, envp);
 }
 
-int main(int argc, char *argv) {
-  printf("TEST\n");
-  compile_gtk(pkg_config("gtk+-2.0"));
-  return 0;
+int main(int argc, char **argv) {
+
+    time_t t;
+    int status, bytes;
+
+    pid_t pid;
+    pthread_t tid;
+    Argument *argument;
+    argument = (Argument *)malloc((3 * sizeof(char *)) + sizeof(Argument));
+
+    argument->pkgconfig = "gtk+-2.0";
+
+    if(pipe(argument->fd) == -1) {
+        printf("Error occured with pipe call.");
+        return 1;
+    }
+
+    int s_stdout = dup(fileno(stdout));
+    dup2(argument->fd[1], fileno(stdout));
+    close(argument->fd[1]);
+
+    if((pid = fork()) < 0) {
+        perror("fork() error");
+    }
+    else if(pid == 0) {
+        pthread_create(&tid, NULL, pkg_config, (void *)&argument);
+        sleep(5);
+        exit(1);
+    }
+    else do {
+        if((pid = waitpid(pid, &status, WNOHANG)) == -1) {
+            perror("wait() error");
+        }
+        else if(pid == 0) {
+            time(&t);
+            printf("child is still running at %s", ctime(&t));
+            sleep(1);
+        }
+        else {
+            if(WIFEXITED(status)) {
+                close(argument->fd[1]);
+                printf("child exited with status of %d\n", WEXITSTATUS(status));
+                while(bytes = read(argument->fd[0], argument->output, BUFFER+1)) {
+                    if(bytes != 0) {
+                        fflush(stdout);
+                        close(fileno(stdout));
+                        dup2(s_stdout, fileno(stdout));
+                        close(s_stdout);
+                        break;
+                    }
+                }
+                close(argument->fd[0]);
+            } 
+            else {
+                puts("child did not exit successfully");
+            }
+        }
+    } while(pid == 0);
+
+    printf("argument->output: %s\n",argument->output);
+
+    return 0;
 }
