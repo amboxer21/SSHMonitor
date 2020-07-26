@@ -8,12 +8,9 @@
 
 #include "build.h"
 
+static const time_t t_time;
+
 int compile_libmasquerade() {
-
-    time_t t;
-    time(&t);
-
-    char *t_time = ctime(&t);
 
     char *cwd = get_current_dir_name();
     char *program = "/masquerade.c";
@@ -34,8 +31,8 @@ int compile_libmasquerade() {
     };
 
     if(fork() == 0) {    
-        printf("(INFO) %s - SSHMonitor - Compiling masquerade shared object.\n",chomp(ctime(&t)));
-        printf("(INFO) %s - SSHMonitor - Copying libmasquerade.so -> src/lib/shared/\n",chomp(ctime(&t)));
+        printf("(INFO) %s - SSHMonitor - Compiling masquerade shared object.\n",chomp(ctime(&t_time)));
+        printf("(INFO) %s - SSHMonitor - Copying libmasquerade.so -> src/lib/shared/\n",chomp(ctime(&t_time)));
         execvpe(arguments[0], arguments, envp);
     } else {
         printf("An issue occured while compiling the .SO!");
@@ -91,24 +88,28 @@ void *pkg_config(void *pakage) {
     execvpe(arguments[0], arguments, envp);
 }
 
+void *redirect_output() {
+
+}
+
 int main(int argc, char **argv) {
 
-    time_t t;
     int status, bytes;
 
     pid_t pid;
     pthread_t tid;
+
     Argument *argument;
     argument = (Argument *)malloc((3 * sizeof(char *)) + sizeof(Argument));
 
     argument->pkgconfig = "gtk+-2.0";
+    argument->s_stdout = dup(fileno(stdout));
 
     if(pipe(argument->fd) == -1) {
         printf("Error occured with pipe call.");
         return 1;
     }
 
-    int s_stdout = dup(fileno(stdout));
     dup2(argument->fd[1], fileno(stdout));
     close(argument->fd[1]);
 
@@ -125,8 +126,7 @@ int main(int argc, char **argv) {
             perror("wait() error");
         }
         else if(pid == 0) {
-            time(&t);
-            printf("child is still running at %s", ctime(&t));
+            printf("child is still running at %s\n", chomp(ctime(&t_time)));
             sleep(1);
         }
         else {
@@ -135,17 +135,16 @@ int main(int argc, char **argv) {
                 printf("child exited with status of %d\n", WEXITSTATUS(status));
                 while(bytes = read(argument->fd[0], argument->output, BUFFER+1)) {
                     if(bytes != 0) {
-                        fflush(stdout);
                         close(fileno(stdout));
-                        dup2(s_stdout, fileno(stdout));
-                        close(s_stdout);
+                        dup2(argument->s_stdout, fileno(stdout));
+                        close(argument->s_stdout);
                         break;
                     }
                 }
                 close(argument->fd[0]);
             } 
             else {
-                puts("child did not exit successfully");
+                perror("child did not exit successfully: ");
             }
         }
     } while(pid == 0);
