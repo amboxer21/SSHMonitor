@@ -6,44 +6,24 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-char *pkg_config(char *pkg) {
+#include "build.h"
 
-    char *envp[] = {"PATH=/usr/bin", NULL};
+pthread_t tid[2];
+pthread_mutex_t lock;
 
-    char *arguments[] = {
-        "/usr/bin/pkg-config", "--cflags", "--libs", pkg, (char *)NULL
-    };
+static const time_t t_time;
 
-    ssize_t exec_buffer = sizeof(arguments) + sizeof(envp) + (sizeof(char *) * 2);
-    char *executable = (char *)malloc(exec_buffer * sizeof(char *));
-    snprintf(executable, exec_buffer, "%s", execvpe(arguments[0], arguments, envp));
+void *compile_libmasquerade(void *arg) {
 
-    return executable;
+    pthread_mutex_lock(&lock);
 
-}
-
-char *chomp(char *s) {
-
-    char *n = malloc(strlen( s ? s : "\n"));
-
-    if(s) {
-        strcpy(n, s);
-    }
-    n[strlen(n)-1] = '\0';
-    return n;
-}
-
-void build(void) {
-
-    time_t t;
-    time(&t);
-
-    char *t_time = ctime(&t);
-
+    char *program = "/masquerade.c";
+    char *shared_object = "/libmasquerade.so";
     char *cwd = get_current_dir_name();
-    char *program = "/src/masquerade.c";
-    char *shared_object = "/src/lib/shared/libmasquerade.so";
 
     ssize_t so_buffer = strlen(cwd) + strlen(shared_object) + (sizeof(char *) * 2);
     char *library = (char *)malloc(so_buffer * sizeof(char *));
@@ -56,16 +36,125 @@ void build(void) {
     char *envp[] = {"PATH=/usr/bin", NULL};
 
     char *arguments[] = {
-        "/usr/bin/gcc", "-shared", "-o", library, "-fPIC", executable, (char *)NULL 
+        "/usr/bin/gcc", "-w", "-shared", "-o", library, "-fPIC", executable, (char *)NULL 
     };
-    
+
     if(fork() == 0) {
-        printf("(INFO) %s - SSHMonitor - Compiling masquerade shared object.\n",chomp(ctime(&t)));
-        printf("(INFO) %s - SSHMonitor - Copying libmasquerade.so -> src/lib/shared/\n",chomp(ctime(&t)));
+        //printf("(INFO) %s - SSHMonitor - Compiling masquerade shared object.\n",chomp(ctime(&t_time)));
+        //printf("(INFO) %s - SSHMonitor - Copying libmasquerade.so -> src/lib/shared/\n",chomp(ctime(&t_time)));
         execvpe(arguments[0], arguments, envp);
     }
 
     free(library);
     free(executable);
 
+    pthread_mutex_unlock(&lock);
+
+    return 0;
+
+}
+
+void *compile_gtk(void *pkg_config) {
+
+    pthread_mutex_lock(&lock);
+
+    Argument **args = (Argument **)pkg_config;
+
+    char *exe = "/notify-gtk";
+    char *program = "/notify-gtk.c";
+    char *cwd = get_current_dir_name();
+    char *output = format_pkg_config(chomp((*args)->output));
+
+    size_t command_buffer_size = strlen(cwd) + strlen(program) + (sizeof(char *) * 2);
+    size_t executable_buffer_size = strlen(cwd) + strlen(exe) + (sizeof(char *) * 2);
+
+    char *command = (char *)malloc(command_buffer_size * sizeof(char *));
+    char *executable = (char *)malloc(executable_buffer_size * sizeof(char *));
+
+    snprintf(command, command_buffer_size, "%s%s", cwd, program);
+    snprintf(executable, executable_buffer_size, "%s%s", cwd, exe);
+
+    char *envp[] = {setpath(), NULL};
+    char *arguments[] = { "/usr/bin/gcc", "-w", command, "-o", executable, output, (char *)NULL };
+    
+    if(fork() == 0) {
+        if(execvpe(arguments[0], arguments, envp) == -1) {
+            perror("PERROR - execvpe error occured in compile_gtk: ");
+        }
+    }
+
+    free(command);
+    free(executable);
+
+    pthread_mutex_unlock(&lock);
+
+    return 0;
+
+}
+
+void *pkg_config(void *package) {
+
+    pthread_mutex_lock(&lock);
+
+    Argument **args = (Argument **)package;
+
+    pid_t pid;
+
+    char *envp[] = {setpath(), NULL};
+
+    char *arguments[] = {
+        "/usr/bin/pkg-config", "--cflags", "--libs", (*args)->pkgconfig, (char *)NULL 
+    };
+
+    if(pipe((*args)->fd) == -1) {
+        perror("Error occured with pipe call: ");
+    }
+
+    if((pid = fork()) < 0) {
+        perror("fork() error: ");
+    }
+    else if(pid == 0) {
+        close((*args)->fd[0]);
+        dup2((*args)->fd[1], 1);
+        close((*args)->fd[1]);
+        execvpe(arguments[0], arguments, envp);
+    }
+    else {
+        close((*args)->fd[1]);
+        while (read((*args)->fd[0], (*args)->output, BUFFER) != 0) { } 
+    }
+
+    pthread_mutex_unlock(&lock);
+
+    return 0;
+}
+
+int main(int argc, char **argv) {
+
+    Argument *argument;
+    argument = (Argument *)malloc((2 * sizeof(char *)) + sizeof(Argument));
+
+    argument->pkgconfig = "gtk+-2.0";
+
+    if (pthread_mutex_init(&lock, NULL) != 0) { 
+        perror("\n mutex init has failed: "); 
+        return 1; 
+    } 
+
+    pthread_create(&(tid[0]), NULL, pkg_config, (void *)&argument);
+    pthread_create(&(tid[1]), NULL, compile_gtk, (void *)&argument);
+    pthread_create(&(tid[2]), NULL, compile_libmasquerade, (void *)NULL);
+
+    pthread_join(tid[0], NULL);
+    wait(NULL);
+    pthread_join(tid[1], NULL);
+    wait(NULL);
+    pthread_join(tid[2], NULL);
+    wait(NULL);
+
+    pthread_mutex_destroy(&lock);
+
+    printf("argument->output: %s\n",argument->output);
+
+    return 0;
 }
