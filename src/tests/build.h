@@ -1,5 +1,7 @@
 #define _GNU_SOURCE
 
+#include <ctype.h>
+
 #define BUFFER 1024
 
 typedef struct Arguments {
@@ -9,22 +11,22 @@ typedef struct Arguments {
     char output[BUFFER];
 } Argument;
 
-char *gsub(char *string, char delim, char n_char) {
+char *format_pkg_config(char *string) {
 
     int i;
+    char *t = "\",\"";
+    
     char buffer[BUFFER];
 
     snprintf(buffer, strlen(string)+1, "%s", string);
     
     for(i = 0; i <= strlen(buffer); i++) {
-  		  if(buffer[i] == delim) {
-  			    buffer[i] = (int)n_char;
+  		  if(isspace(buffer[i])) {
+  			    buffer[i] = "","";
  		    }
 	  }
 
-    char *str = malloc(strlen(buffer)+1);
-    strncpy(str,buffer,strlen(buffer));
-    
+    char *str = strndup(buffer, strlen(buffer));
     return str;
 
 }
@@ -53,7 +55,7 @@ char *setpath(void) {
     char *pathenv = (char *)malloc(path_size*sizeof(char *));
     snprintf(pathenv, path_size, "PATH=%s", path);
 
-    char *ppath = pathenv;
+    char *ppath = strndup(pathenv, path_size);
 
     free(pathenv);
 
