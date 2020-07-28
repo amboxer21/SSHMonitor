@@ -63,7 +63,7 @@ void *compile_gtk(void *pkg_config) {
     char *exe = "/notify-gtk";
     char *program = "/notify-gtk.c";
     char *cwd = get_current_dir_name();
-    char *output = chomp((*args)->output);
+    char *output = format_pkg_config(chomp((*args)->output));
 
     size_t command_buffer_size = strlen(cwd) + strlen(program) + (sizeof(char *) * 2);
     size_t executable_buffer_size = strlen(cwd) + strlen(exe) + (sizeof(char *) * 2);
@@ -74,16 +74,8 @@ void *compile_gtk(void *pkg_config) {
     snprintf(command, command_buffer_size, "%s%s", cwd, program);
     snprintf(executable, executable_buffer_size, "%s%s", cwd, exe);
 
-
-    // Doesnt work because we need to seperate each library reference and include with a comma after encapsulating each arg with double quotes.
-    //char *test = "-pthread -I/usr/include/gtk-2.0 -I/usr/lib/x86_64-linux-gnu/gtk-2.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/pango-1.0 -I/usr/include/fribidi -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16 -lgtk-x11-2.0 -lgdk-x11-2.0 -lpangocairo-1.0 -latk-1.0 -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype";
-
-    //printf("NEW STRING: %s\n", format_pkg_config(test));
-
     char *envp[] = {setpath(), NULL};
     char *arguments[] = { "/usr/bin/gcc", "-w", command, "-o", executable, output, (char *)NULL };
-    // This works becasue of the explanation above.
-    //char *arguments[] = { "/usr/bin/gcc", "-w", command, "-o", executable, "-pthread","-I/usr/include/gtk-2.0","-I/usr/lib/x86_64-linux-gnu/gtk-2.0/include","-I/usr/include/gio-unix-2.0","-I/usr/include/cairo","-I/usr/include/pango-1.0","-I/usr/include/atk-1.0","-I/usr/include/cairo","-I/usr/include/pixman-1","-I/usr/include/gdk-pixbuf-2.0","-I/usr/include/libmount","-I/usr/include/blkid","-I/usr/include/pango-1.0","-I/usr/include/harfbuzz","-I/usr/include/pango-1.0","-I/usr/include/fribidi","-I/usr/include/glib-2.0","-I/usr/lib/x86_64-linux-gnu/glib-2.0/include","-I/usr/include/uuid","-I/usr/include/freetype2","-I/usr/include/libpng16","-lgtk-x11-2.0","-lgdk-x11-2.0","-lpangocairo-1.0","-latk-1.0","-lcairo","-lgdk_pixbuf-2.0","-lgio-2.0","-lpangoft2-1.0","-lpango-1.0","-lgobject-2.0","-lglib-2.0","-lfontconfig","-lfreetype", (char *)NULL };
     
     if(fork() == 0) {
         if(execvpe(arguments[0], arguments, envp) == -1) {

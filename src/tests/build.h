@@ -2,7 +2,9 @@
 
 #include <ctype.h>
 
+#define SIZE 4
 #define BUFFER 1024
+#define PBUFFER 4096
 
 typedef struct Arguments {
     int fd[2];
@@ -13,21 +15,36 @@ typedef struct Arguments {
 
 char *format_pkg_config(char *string) {
 
-    int i;
-    char *t = "\",\"";
-    
-    char buffer[BUFFER];
+    int i, j;
+    int n = 0;
 
-    snprintf(buffer, strlen(string)+1, "%s", string);
-    
-    for(i = 0; i <= strlen(buffer); i++) {
-  		  if(isspace(buffer[i])) {
-  			    buffer[i] = "","";
- 		    }
-	  }
+    char *fbuffer;
+    char delim[SIZE] = "\",\"";
 
-    char *str = strndup(buffer, strlen(buffer));
-    return str;
+    char nbuffer[PBUFFER];
+    char sbuffer[PBUFFER];
+
+    strncpy(sbuffer, "\"", 2);
+    strncat(sbuffer, string, strlen(string));
+
+    for(i = 0; i < strlen((char *)sbuffer); i++) {
+        if(isspace(sbuffer[i])) {
+            if(n == 0) {
+                n = i;
+            }
+            nbuffer[n++] = delim[0];
+            nbuffer[n++] = delim[1];
+            nbuffer[n++] = delim[2];
+        }
+        else {
+            nbuffer[n++] = sbuffer[i];
+        }
+    }
+
+    strncat(nbuffer, "\"", 1);
+    fbuffer = strndup(nbuffer, strlen(nbuffer));
+
+    return fbuffer;
 
 }
 
