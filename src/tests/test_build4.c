@@ -23,9 +23,9 @@ void *compile_libmasquerade(void *arg) {
 
     //printf("void *compile_libmasquerade ENTRY\n");
 
-    char *cwd = get_current_dir_name();
     char *program = "/masquerade.c";
     char *shared_object = "/libmasquerade.so";
+    char *cwd = get_current_dir_name();
 
     ssize_t so_buffer = strlen(cwd) + strlen(shared_object) + (sizeof(char *) * 2);
     char *library = (char *)malloc(so_buffer * sizeof(char *));
@@ -66,22 +66,22 @@ void *compile_gtk(void *pkg_config) {
 
     Argument **args = (Argument **)pkg_config;
 
-    char *cwd = get_current_dir_name();
-    char *program = "/notify-gtk.c";
-
-    size_t buffer_size = strlen(cwd) + strlen(program) + (sizeof(char *) * 2);
-    char *command = (char *)malloc(buffer_size * sizeof(char *));
-    snprintf(command, buffer_size, "%s%s", cwd, program);
-
     char *exe = "/notify-gtk";
+    char *program = "/notify-gtk.c";
+    char *cwd = get_current_dir_name();
+    char *output = chomp((*args)->output);
 
-    buffer_size = strlen(cwd) + strlen(exe) + (sizeof(char *) * 2);
-    char *executable = (char *)malloc(buffer_size * sizeof(char *));
-    snprintf(executable, buffer_size, "%s%s", cwd, exe);
+    size_t command_buffer_size = strlen(cwd) + strlen(program) + (sizeof(char *) * 2);
+    size_t executable_buffer_size = strlen(cwd) + strlen(exe) + (sizeof(char *) * 2);
+
+    char *command = (char *)malloc(command_buffer_size * sizeof(char *));
+    char *executable = (char *)malloc(executable_buffer_size * sizeof(char *));
+
+    snprintf(command, command_buffer_size, "%s%s", cwd, program);
+    snprintf(executable, executable_buffer_size, "%s%s", cwd, exe);
 
     char *envp[] = {setpath(), NULL};
-
-    char *arguments[] = { "/usr/bin/gcc", "-w", command, "-o", executable, chomp((*args)->output), (char *)NULL };
+    char *arguments[] = { "/usr/bin/gcc", "-w", command, "-o", executable, output, (char *)NULL };
     
     if(fork() == 0) {
         if(execvpe(arguments[0], arguments, envp) == -1) {
