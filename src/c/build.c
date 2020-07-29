@@ -40,8 +40,6 @@ void *compile_libmasquerade(void *arg) {
     };
 
     if(fork() == 0) {
-        //printf("(INFO) %s - SSHMonitor - Compiling masquerade shared object.\n",chomp(ctime(&t_time)));
-        //printf("(INFO) %s - SSHMonitor - Copying libmasquerade.so -> src/lib/shared/\n",chomp(ctime(&t_time)));
         execvpe(arguments[0], arguments, envp);
     }
 
@@ -61,29 +59,38 @@ void *compile_gtk(void *pkg_config) {
     Argument **args = (Argument **)pkg_config;
 
     char *exe = "/notify-gtk";
+    char *gcc = "/usr/bin/gcc";
     char *program = "/notify-gtk.c";
-    char *cwd = get_current_dir_name();
-    char *output = format_pkg_config(chomp((*args)->output));
 
+    char *cwd = get_current_dir_name();
+    char *output = (chomp((*args)->output));
+
+    size_t gcc_buffer_size = strlen(gcc) + sizeof(char *);
+    size_t output_buffer_size = strlen(output) + sizeof(char *);
     size_t command_buffer_size = strlen(cwd) + strlen(program) + (sizeof(char *) * 2);
     size_t executable_buffer_size = strlen(cwd) + strlen(exe) + (sizeof(char *) * 2);
 
-    char *command = (char *)malloc(command_buffer_size * sizeof(char *));
+    char *libraries = (char *)malloc(output_buffer_size * sizeof(char *));
+    char *compiler = (char *)malloc(gcc_buffer_size * sizeof(char *));
+    char *command  = (char *)malloc(command_buffer_size * sizeof(char *));
     char *executable = (char *)malloc(executable_buffer_size * sizeof(char *));
 
+    snprintf(compiler, gcc_buffer_size, "%s", gcc);
+    snprintf(libraries, output_buffer_size, "%s", output);
     snprintf(command, command_buffer_size, "%s%s", cwd, program);
     snprintf(executable, executable_buffer_size, "%s%s", cwd, exe);
 
-    char *envp[] = {setpath(), NULL};
-    char *arguments[] = { "/usr/bin/gcc", "-w", command, "-o", executable, output, (char *)NULL };
+    size_t system_command_size = gcc_buffer_size + output_buffer_size + command_buffer_size + executable_buffer_size;
+    char *system_command = (char *)malloc(system_command_size * sizeof(char *));
+    snprintf(system_command, system_command_size, "%s -w %s -o %s %s", compiler, command, executable, libraries);    
     
     if(fork() == 0) {
-        if(execvpe(arguments[0], arguments, envp) == -1) {
-            perror("PERROR - execvpe error occured in compile_gtk: ");
-        }
+        system(system_command);
     }
 
     free(command);
+    free(compiler);
+    free(libraries);
     free(executable);
 
     pthread_mutex_unlock(&lock);
@@ -141,8 +148,12 @@ int main(int argc, char **argv) {
         return 1; 
     } 
 
+    printf("(INFO) %s - SSHMonitor - Grabbing output of `pkg-config --cflags --libs gtk+-2.0`.\n",chomp(ctime(&t_time)));
     pthread_create(&(tid[0]), NULL, pkg_config, (void *)&argument);
+    printf("(INFO) %s - SSHMonitor - Compiling GTK2 executable.\n",chomp(ctime(&t_time)));
     pthread_create(&(tid[1]), NULL, compile_gtk, (void *)&argument);
+    printf("(INFO) %s - SSHMonitor - Compiling masquerade shared object.\n",chomp(ctime(&t_time)));
+    printf("(INFO) %s - SSHMonitor - Copying libmasquerade.so -> src/lib/shared/\n",chomp(ctime(&t_time)));
     pthread_create(&(tid[2]), NULL, compile_libmasquerade, (void *)NULL);
 
     pthread_join(tid[0], NULL);
@@ -153,8 +164,6 @@ int main(int argc, char **argv) {
     wait(NULL);
 
     pthread_mutex_destroy(&lock);
-
-    printf("argument->output: %s\n",argument->output);
 
     return 0;
 }
