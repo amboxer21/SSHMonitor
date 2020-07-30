@@ -26,7 +26,7 @@
 
 #### You can install sshmonitor via pip as well.
 
-**EDIT:** PIP package has been removed from pypi `for now`.
+`pip install sshmonitor`
 
 Website:
 [https://pypi.org/project/sshmonitor/](https://pypi.org/project/sshmonitor/)
