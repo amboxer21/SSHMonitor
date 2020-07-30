@@ -53,11 +53,11 @@ void *compile_libmasquerade(void *arg) {
 
 }
 
-void *compile_gtk(void *args) {
+void *compile_gtk(void *pkg_config) {
 
     pthread_mutex_lock(&lock);
 
-    Argument **arg = (Argument **)args;
+    Argument **args = (Argument **)pkg_config;
 
     char *cwd = get_current_dir_name();
     char *program = "/notify-gtk.c";
@@ -74,11 +74,9 @@ void *compile_gtk(void *args) {
 
     char *envp[] = {setpath(), NULL};
 
-    char *arguments[] = { "/usr/bin/gcc", command, "-o", executable, chomp((*arg)->output), (char *)NULL };
+    char *arguments[] = { "/usr/bin/gcc", command, "-o", executable, chomp((*args)->output), (char *)NULL };
     
-    if(fork() == 0) {
-        execvpe(arguments[0], arguments, envp);
-    }
+    execvpe(arguments[0], arguments, envp);
 
     free(command);
     free(executable);
@@ -89,65 +87,19 @@ void *compile_gtk(void *args) {
 
 }
 
-void *pkg_config(void *args) {
+void *pkg_config(void *pakage) {
 
     pthread_mutex_lock(&lock);
 
-    Argument **arg = (Argument **)args;
-
-    pid_t pid;
-    pthread_t tid[2];
-
-    int status, bytes;
+    Argument **pkg = (Argument **)pakage;
 
     char *envp[] = {setpath(), NULL};
 
     char *arguments[] = {
-        "/usr/bin/pkg-config", "--cflags", "--libs", (*arg)->pkgconfig, (char *)NULL 
+        "/usr/bin/pkg-config", "--cflags", "--libs", (*pkg)->pkgconfig, (char *)NULL 
     };
 
-    if(pipe((*arg)->fd) == -1) {
-        perror("Error occured with pipe call: ");
-    }
-
-    dup2((*arg)->fd[1], fileno(stdout));
-    close((*arg)->fd[1]);
-
-    if((pid = fork()) < 0) {
-        perror("fork() error: ");
-    }
-    else if(pid == 0) {
-        execvpe(arguments[0], arguments, envp);
-        sleep(5);
-        exit(1);
-    }
-    else do {
-        if((pid = waitpid(pid, &status, WNOHANG)) == -1) {
-            perror("wait() error: ");
-        }
-        else if(pid == 0) {
-            //printf("child is still running");
-            sleep(1);
-        }
-        else {
-            if(WIFEXITED(status)) {
-                close((*arg)->fd[1]);
-                //printf("child exited with status of %d\n", WEXITSTATUS(status));
-                while(bytes = read((*arg)->fd[0], (*arg)->output, BUFFER+1)) {
-                    if(bytes != 0) {
-                        close(fileno(stdout));
-                        dup2((*arg)->s_stdout, fileno(stdout));
-                        close((*arg)->s_stdout);
-                        break;
-                    }
-                }
-                close((*arg)->fd[0]);
-            } 
-            else {
-                perror("child did not exit successfully: ");
-            }
-        }
-    } while(pid == 0);
+    execvpe(arguments[0], arguments, envp);
 
     pthread_mutex_unlock(&lock);
 
@@ -166,7 +118,6 @@ int main(int argc, char **argv) {
     argument = (Argument *)malloc((2 * sizeof(char *)) + sizeof(Argument));
 
     argument->pkgconfig = "gtk+-2.0";
-    argument->s_stdout = dup(fileno(stdout));
 
     if (pthread_mutex_init(&lock, NULL) != 0) { 
         printf("\n mutex init has failed\n"); 

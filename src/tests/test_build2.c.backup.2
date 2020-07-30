@@ -12,13 +12,9 @@
 
 #include "build.h"
 
-pthread_mutex_t lock;
-
 static const time_t t_time;
 
 void *compile_libmasquerade(void *arg) {
-
-    pthread_mutex_lock(&lock);
 
     char *cwd = get_current_dir_name();
     char *program = "/masquerade.c";
@@ -47,17 +43,13 @@ void *compile_libmasquerade(void *arg) {
     free(library);
     free(executable);
 
-    pthread_mutex_unlock(&lock);
-
-    return NULL;
+    return 0;
 
 }
 
-void *compile_gtk(void *args) {
+char *compile_gtk(char *pkg_config) {
 
-    pthread_mutex_lock(&lock);
-
-    Argument **arg = (Argument **)args;
+    Argument **args = (Argument **)pkg_config;
 
     char *cwd = get_current_dir_name();
     char *program = "/notify-gtk.c";
@@ -74,84 +66,28 @@ void *compile_gtk(void *args) {
 
     char *envp[] = {setpath(), NULL};
 
-    char *arguments[] = { "/usr/bin/gcc", command, "-o", executable, chomp((*arg)->output), (char *)NULL };
+    char *arguments[] = { "/usr/bin/gcc", command, "-o", executable, pkg_config, (char *)NULL };
     
-    if(fork() == 0) {
-        execvpe(arguments[0], arguments, envp);
-    }
+    execvpe(arguments[0], arguments, envp);
 
     free(command);
     free(executable);
 
-    pthread_mutex_unlock(&lock);
-
-    return NULL;
+    return 0;
 
 }
 
-void *pkg_config(void *args) {
+void *pkg_config(void *pakage) {
 
-    pthread_mutex_lock(&lock);
-
-    Argument **arg = (Argument **)args;
-
-    pid_t pid;
-    pthread_t tid[2];
-
-    int status, bytes;
+    Argument **pkg = (Argument **)pakage;
 
     char *envp[] = {setpath(), NULL};
 
     char *arguments[] = {
-        "/usr/bin/pkg-config", "--cflags", "--libs", (*arg)->pkgconfig, (char *)NULL 
+        "/usr/bin/pkg-config", "--cflags", "--libs", (*pkg)->pkgconfig, (char *)NULL 
     };
 
-    if(pipe((*arg)->fd) == -1) {
-        perror("Error occured with pipe call: ");
-    }
-
-    dup2((*arg)->fd[1], fileno(stdout));
-    close((*arg)->fd[1]);
-
-    if((pid = fork()) < 0) {
-        perror("fork() error: ");
-    }
-    else if(pid == 0) {
-        execvpe(arguments[0], arguments, envp);
-        sleep(5);
-        exit(1);
-    }
-    else do {
-        if((pid = waitpid(pid, &status, WNOHANG)) == -1) {
-            perror("wait() error: ");
-        }
-        else if(pid == 0) {
-            //printf("child is still running");
-            sleep(1);
-        }
-        else {
-            if(WIFEXITED(status)) {
-                close((*arg)->fd[1]);
-                //printf("child exited with status of %d\n", WEXITSTATUS(status));
-                while(bytes = read((*arg)->fd[0], (*arg)->output, BUFFER+1)) {
-                    if(bytes != 0) {
-                        close(fileno(stdout));
-                        dup2((*arg)->s_stdout, fileno(stdout));
-                        close((*arg)->s_stdout);
-                        break;
-                    }
-                }
-                close((*arg)->fd[0]);
-            } 
-            else {
-                perror("child did not exit successfully: ");
-            }
-        }
-    } while(pid == 0);
-
-    pthread_mutex_unlock(&lock);
-
-    return NULL;
+    execvpe(arguments[0], arguments, envp);
 }
 
 void *redirect_output() {
@@ -160,30 +96,66 @@ void *redirect_output() {
 
 int main(int argc, char **argv) {
 
+    int status, bytes;
+
+    pid_t pid;
     pthread_t tid[2];
 
     Argument *argument;
-    argument = (Argument *)malloc((2 * sizeof(char *)) + sizeof(Argument));
+    argument = (Argument *)malloc((3 * sizeof(char *)) + sizeof(Argument));
 
     argument->pkgconfig = "gtk+-2.0";
     argument->s_stdout = dup(fileno(stdout));
 
-    if (pthread_mutex_init(&lock, NULL) != 0) { 
-        printf("\n mutex init has failed\n"); 
-        return 1; 
-    } 
+    pthread_create(&(tid[1]), NULL, compile_libmasquerade, (void *)NULL);
+    pthread_join(tid[1], NULL);
 
-    pthread_create(&(tid[0]), NULL, compile_libmasquerade, (void *)NULL);
-    pthread_create(&(tid[1]), NULL, pkg_config, (void *)&argument);
-    pthread_create(&(tid[2]), NULL, compile_gtk, (void *)&argument);
+    if(pipe(argument->fd) == -1) {
+        printf("Error occured with pipe call.");
+        return 1;
+    }
+
+    dup2(argument->fd[1], fileno(stdout));
+    close(argument->fd[1]);
+
+    if((pid = fork()) < 0) {
+        perror("fork() error");
+    }
+    else if(pid == 0) {
+        pthread_create(&(tid[2]), NULL, pkg_config, (void *)&argument);
+        pthread_join(tid[2], NULL);
+        sleep(5);
+        exit(1);
+    }
+    else do {
+        if((pid = waitpid(pid, &status, WNOHANG)) == -1) {
+            perror("wait() error");
+        }
+        else if(pid == 0) {
+            printf("child is still running at %s\n", chomp(ctime(&t_time)));
+            sleep(1);
+        }
+        else {
+            if(WIFEXITED(status)) {
+                close(argument->fd[1]);
+                printf("child exited with status of %d\n", WEXITSTATUS(status));
+                while(bytes = read(argument->fd[0], argument->output, BUFFER+1)) {
+                    if(bytes != 0) {
+                        close(fileno(stdout));
+                        dup2(argument->s_stdout, fileno(stdout));
+                        close(argument->s_stdout);
+                        break;
+                    }
+                }
+                close(argument->fd[0]);
+            } 
+            else {
+                perror("child did not exit successfully: ");
+            }
+        }
+    } while(pid == 0);
 
     printf("argument->output: %s\n",argument->output);
-
-    pthread_join(tid[0], NULL);
-    pthread_join(tid[1], NULL);
-    pthread_join(tid[2], NULL);
-
-    pthread_mutex_destroy(&lock);
 
     return 0;
 }
