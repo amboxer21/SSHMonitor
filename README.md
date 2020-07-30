@@ -22,8 +22,6 @@
 
   **[anthony@ghost SSHMonitor]$** `sudo python setup.py install`
 
-^^ NOTE: Check the Crontab and make sure it was actually created. (**crontab feature will be removed along with deamon support**)
-
 ***
 
 #### You can install sshmonitor via pip as well.
