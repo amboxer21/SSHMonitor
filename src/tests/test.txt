@@ -1,8 +1,0 @@
-email=amboxer21@gmail.com
-logfile=/var/log/messages
-verbose=False
-password=GHOST21ghost
-email_port=587
-disable_log=False
-disable_email=False
-notify_with_ui=False
