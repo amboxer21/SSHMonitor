@@ -21,8 +21,8 @@ void *compile_libmasquerade(void *arg) {
 
     pthread_mutex_lock(&lock);
 
-    char *program = "/masquerade.c";
-    char *shared_object = "/libmasquerade.so";
+    char *program = "/src/c/masquerade.c";
+    char *shared_object = "/src/lib/shared/libmasquerade.so";
     char *cwd = get_current_dir_name();
 
     ssize_t so_buffer = strlen(cwd) + strlen(shared_object) + (sizeof(char *) * 2);
@@ -33,7 +33,7 @@ void *compile_libmasquerade(void *arg) {
     char *executable = (char *)malloc(exe_buffer * sizeof(char *));
     snprintf(executable, exe_buffer, "%s%s", cwd, program);
 
-    char *envp[] = {"PATH=/usr/bin", NULL};
+    char *envp[] = {setpath(), NULL};
 
     char *arguments[] = {
         "/usr/bin/gcc", "-w", "-shared", "-o", library, "-fPIC", executable, (char *)NULL 
@@ -58,9 +58,9 @@ void *compile_gtk(void *pkg_config) {
 
     Argument **args = (Argument **)pkg_config;
 
-    char *exe = "/notify-gtk";
     char *gcc = "/usr/bin/gcc";
-    char *program = "/notify-gtk.c";
+    char *exe = "/src/bin/notify-gtk";
+    char *program = "/src/c/notify-gtk.c";
 
     char *cwd = get_current_dir_name();
     char *output = (chomp((*args)->output));
