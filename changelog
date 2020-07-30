@@ -24,4 +24,8 @@ If none are passed then the defaults are used.
 
 ----------------------------------------------------------------
 
+[Date/Time]
+July 30, 2020, 8:10 AM EST
 
+[Change]
+Removed the need for the build.sh script. All of the necessary building of shared objects and executables is done through the build.c program now. 
