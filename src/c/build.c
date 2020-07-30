@@ -136,7 +136,7 @@ void *pkg_config(void *package) {
     return 0;
 }
 
-int main(int argc, char **argv) {
+void build(void) {
 
     Argument *argument;
     argument = (Argument *)malloc((2 * sizeof(char *)) + sizeof(Argument));
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 
     if (pthread_mutex_init(&lock, NULL) != 0) { 
         perror("\n mutex init has failed: "); 
-        return 1; 
+        exit(1);
     } 
 
     printf("(INFO) %s - SSHMonitor - Grabbing output of `pkg-config --cflags --libs gtk+-2.0`.\n",chomp(ctime(&t_time)));
@@ -164,6 +164,4 @@ int main(int argc, char **argv) {
     wait(NULL);
 
     pthread_mutex_destroy(&lock);
-
-    return 0;
 }

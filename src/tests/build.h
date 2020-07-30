@@ -41,7 +41,7 @@ char *format_pkg_config(char *string) {
         }
     }
 
-    strncat(nbuffer, "\"", 1);
+    strncat(nbuffer, "\"", 2);
     fbuffer = strndup(nbuffer, strlen(nbuffer));
 
     return fbuffer;
