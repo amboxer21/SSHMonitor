@@ -5,7 +5,9 @@
 
 >[**OLD**] As of **07-21-2020**, this app is now compatible with Python3. Checkout this branch for use with Python3: https://github.com/amboxer21/SSHMonitor2.7/tree/SSHMonitor3 
 
->[**LATEST**] As of **07-21-2020**, this app can be used with both Python3 **AND** Python2.
+>[**OLD**] As of **07-21-2020**, this app can be used with both Python3 **AND** Python2.
+
+>[**LATEST**] As of **02-17-2021**, the app is to be referred to as SSHMonitor instead of SSHMonitor2.7. The name change happened along time ago but I am now just updating this.
 
 **Important:**
 > The notify with ui option is broken with Python3. There seems to be an issue with the **ctypes** system library. See issue [#22](https://github.com/amboxer21/SSHMonitor/issues/22).
