@@ -23,6 +23,10 @@
 ### Build program:
 
   **[anthony@ghost SSHMonitor]$** `sudo python setup.py install`
+  
+  **NOTE:** sshmonitor.py is installed into the `/usr/local/bin/` directory. This is not normally in a users default path. Which means that you'll need to add `/usr/local/bin/` to your path in your bashrc.
+  
+Add this to your ~/.bashrc: `export PATH="$PATH:/usr/local/bin"`
 
 ***
 
